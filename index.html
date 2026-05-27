@@ -501,10 +501,10 @@ function openDB(){
   });
 }
 
-function getAll(store){return new Promise(r=>{const tx=db.transaction(store,'readonly'),req=tx.objectStore(store).getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([])})}
-function add(store,item){return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite'),req=tx.objectStore(store).add(item);req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)})}
-function put(store,item){return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite'),req=tx.objectStore(store).put(item);req.onsuccess=()=>res();req.onerror=()=>rej(req.error)})}
-function remove(store,id){return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite'),req=tx.objectStore(store).delete(id);req.onsuccess=()=>res();req.onerror=()=>rej(req.error)})}
+function getAll(store){return new Promise(r=>{if(!db){r([]);return}const tx=db.transaction(store,'readonly'),req=tx.objectStore(store).getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([])})}
+function add(store,item){return new Promise((res,rej)=>{if(!db){rej(new Error('数据库未初始化'));return}const tx=db.transaction(store,'readwrite'),req=tx.objectStore(store).add(item);req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)})}
+function put(store,item){return new Promise((res,rej)=>{if(!db){rej(new Error('数据库未初始化'));return}const tx=db.transaction(store,'readwrite'),req=tx.objectStore(store).put(item);req.onsuccess=()=>res();req.onerror=()=>rej(req.error)})}
+function remove(store,id){return new Promise((res,rej)=>{if(!db){rej(new Error('数据库未初始化'));return}const tx=db.transaction(store,'readwrite'),req=tx.objectStore(store).delete(id);req.onsuccess=()=>res();req.onerror=()=>rej(req.error)})}
 
 async function exportAll(){
   const data = {};
@@ -513,6 +513,7 @@ async function exportAll(){
 }
 
 async function importAll(data){
+  if(!db) return;
   for(const s of STORES){
     if(!data[s]) continue;
     const tx = db.transaction(s,'readwrite'), store = tx.objectStore(s);
@@ -1121,14 +1122,9 @@ async function init(){
     syncTimer = setInterval(autoSync, SYNC_INTERVAL);
   }catch(err){
     console.error('Init failed:', err);
-    setSyncStatus('error','初始化失败');
+    setSyncStatus('error','初始化失败: ' + err.message);
+    toast('初始化失败，请刷新页面');
   }
-  
-  // 测试事件监听器
-  console.log('页面加载完成，测试事件监听器...');
-  console.log('uploadBtn点击监听器:', document.getElementById('uploadBtn').onclick);
-  console.log('uploadArea点击监听器:', uploadArea.onclick);
-  toast('页面加载完成，可以尝试上传图片');
 }
 
 init();
