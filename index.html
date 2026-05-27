@@ -1582,10 +1582,10 @@ async function renderTodos(){
   if(!all.length) list.innerHTML='<li style="text-align:center;padding:32px;color:var(--text3)">还没有待办事项，在上方添加一条吧</li>';
   else list.innerHTML=all.map(t=>'<li class="todo-item"><button class="todo-check '+(t.done?'done':'')+'" data-id="'+t.id+'" data-done="'+t.done+'"></button><span class="todo-text '+(t.done?'done':'')+'">'+esc(t.text)+'</span><span class="todo-cat">'+esc(t.category)+'</span><button class="btn-icon" data-del="'+t.id+'" title="删除" style="width:26px;height:26px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></li>').join('');
   document.getElementById('todoSummary').innerHTML='<span>待完成 <strong>'+active.length+'</strong> 项</span><span>已完成 <strong>'+done.length+'</strong> 项</span><span>总计 <strong>'+todos.length+'</strong> 项</span>';
-  list.querySelectorAll('.todo-check').forEach(btn=>{btn.addEventListener('click',async()=>{const id=+btn.dataset.id,todo=todos.find(t=>t.id===id);if(todo){todo.done=!todo.done;await put('todos',todo);renderTodos();markDirty()}})});
-  list.querySelectorAll('[data-del]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('todos',+btn.dataset.del);renderTodos();markDirty();toast('已删除')})});
+  list.querySelectorAll('.todo-check').forEach(btn=>{btn.addEventListener('click',async()=>{const id=+btn.dataset.id,todo=todos.find(t=>t.id===id);if(todo){todo.done=!todo.done;await put('todos',todo);renderTodos();renderDashboard();markDirty()}})});
+  list.querySelectorAll('[data-del]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('todos',+btn.dataset.del);renderTodos();renderDashboard();markDirty();toast('已删除')})});
 }
-document.getElementById('todoAddBtn').addEventListener('click',async()=>{const input=document.getElementById('todoInput'),text=input.value.trim();if(!text)return;await add('todos',{text,category:document.getElementById('todoCat').value,done:false,createdAt:Date.now()});input.value='';renderTodos();markDirty()});
+document.getElementById('todoAddBtn').addEventListener('click',async()=>{const input=document.getElementById('todoInput'),text=input.value.trim();if(!text)return;await add('todos',{text,category:document.getElementById('todoCat').value,done:false,createdAt:Date.now()});input.value='';renderTodos();renderDashboard();markDirty()});
 document.getElementById('todoInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('todoAddBtn').click()});
 
 // ═══════════════════════════════════════
@@ -1599,9 +1599,9 @@ async function renderAccounts(){
   const colors={'餐饮':'oklch(0.6 0.16 30)','交通':'oklch(0.55 0.14 255)','购物':'oklch(0.55 0.14 300)','房租':'oklch(0.5 0.1 200)','娱乐':'oklch(0.6 0.14 50)','医疗':'oklch(0.5 0.15 20)','教育':'oklch(0.55 0.16 160)','其他':'oklch(0.5 0.01 85)'};
   if(!accounts.length) list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">还没有记账记录</li>';
   else list.innerHTML=accounts.map(a=>'<li class="acct-item"><div class="acct-item-left"><span class="acct-cat-dot" style="background:'+(colors[a.category]||'var(--text3)')+'"></span><span>'+esc(a.category)+(a.note?' · '+esc(a.note):'')+'</span></div><div style="display:flex;align-items:center;gap:8px"><span class="acct-amount '+a.type+'">'+(a.type==='income'?'+':'-')+'¥'+a.amount.toFixed(2)+'</span><button class="btn-icon" data-del-acct="'+a.id+'" style="width:24px;height:24px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div></li>').join('');
-  list.querySelectorAll('[data-del-acct]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('accounts',+btn.dataset.delAcct);renderAccounts();markDirty();toast('已删除')})});
+  list.querySelectorAll('[data-del-acct]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('accounts',+btn.dataset.delAcct);renderAccounts();renderDashboard();markDirty();toast('已删除')})});
 }
-document.getElementById('acctAddBtn').addEventListener('click',async()=>{const amount=parseFloat(document.getElementById('acctAmount').value);if(!amount||amount<=0){toast('请输入有效金额');return}await add('accounts',{type:document.getElementById('acctType').value,amount,category:document.getElementById('acctCat').value,note:document.getElementById('acctNote').value.trim(),createdAt:Date.now()});document.getElementById('acctAmount').value='';document.getElementById('acctNote').value='';renderAccounts();markDirty();toast('已记录')});
+document.getElementById('acctAddBtn').addEventListener('click',async()=>{const amount=parseFloat(document.getElementById('acctAmount').value);if(!amount||amount<=0){toast('请输入有效金额');return}await add('accounts',{type:document.getElementById('acctType').value,amount,category:document.getElementById('acctCat').value,note:document.getElementById('acctNote').value.trim(),createdAt:Date.now()});document.getElementById('acctAmount').value='';document.getElementById('acctNote').value='';renderAccounts();renderDashboard();markDirty();toast('已记录')});
 
 // ═══════════════════════════════════════
 // CALENDAR MODULE
@@ -1626,7 +1626,7 @@ async function renderEvents(){
   const list=document.getElementById('eventList');
   if(!up.length) list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">暂无日程，点击上方按钮添加</li>';
   else list.innerHTML=up.map(e=>'<li class="event-item"><span class="event-date">'+e.date+'</span><span class="event-text">'+esc(e.title)+'</span><button class="btn-icon" data-del-event="'+e.id+'" style="width:24px;height:24px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></li>').join('');
-  list.querySelectorAll('[data-del-event]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('events',+btn.dataset.delEvent);renderCalendar();markDirty();toast('已删除')})});
+  list.querySelectorAll('[data-del-event]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('events',+btn.dataset.delEvent);renderCalendar();renderDashboard();markDirty();toast('已删除')})});
 }
 document.getElementById('calPrev').addEventListener('click',()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--}renderCalendar()});
 document.getElementById('calNext').addEventListener('click',()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++}renderCalendar()});
@@ -1636,7 +1636,7 @@ document.getElementById('eventAddBtn').addEventListener('click',()=>{
   if(saveBtn) saveBtn.addEventListener('click',async()=>{
     const t=document.getElementById('eventTitle')?.value?.trim(),d=document.getElementById('eventDate')?.value;
     if(!t||!d){toast('请填写完整');return}
-    await add('events',{title:t,date:d,createdAt:Date.now()});closeModal();renderCalendar();markDirty();toast('日程已添加')
+    await add('events',{title:t,date:d,createdAt:Date.now()});closeModal();renderCalendar();renderDashboard();markDirty();toast('日程已添加')
   });
 });
 
@@ -1653,9 +1653,9 @@ async function renderSleep(){
   const list=document.getElementById('sleepHistory');
   if(!sleeps.length) list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">还没有作息记录</li>';
   else list.innerHTML=sleeps.slice(0,14).map(s=>'<li class="sleep-item"><span>'+s.date+'</span><span>'+s.sleepStart+' → '+s.sleepEnd+'</span><span class="sleep-duration">'+Math.floor(s.duration/60)+'h '+s.duration%60+'m</span><button class="btn-icon" data-del-sleep="'+s.id+'" style="width:24px;height:24px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></li>').join('');
-  list.querySelectorAll('[data-del-sleep]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('sleeps',+btn.dataset.delSleep);renderSleep();markDirty();toast('已删除')})});
+  list.querySelectorAll('[data-del-sleep]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('sleeps',+btn.dataset.delSleep);renderSleep();renderDashboard();markDirty();toast('已删除')})});
 }
-document.getElementById('sleepAddBtn').addEventListener('click',async()=>{const start=document.getElementById('sleepStart').value,end=document.getElementById('sleepEnd').value,date=document.getElementById('sleepDate').value;if(!start||!end||!date){toast('请填写完整');return}const[sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);let d=eh*60+em-(sh*60+sm);if(d<=0)d+=1440;await add('sleeps',{sleepStart:start,sleepEnd:end,date,duration:d,createdAt:Date.now()});renderSleep();markDirty();toast('打卡成功')});
+document.getElementById('sleepAddBtn').addEventListener('click',async()=>{const start=document.getElementById('sleepStart').value,end=document.getElementById('sleepEnd').value,date=document.getElementById('sleepDate').value;if(!start||!end||!date){toast('请填写完整');return}const[sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);let d=eh*60+em-(sh*60+sm);if(d<=0)d+=1440;await add('sleeps',{sleepStart:start,sleepEnd:end,date,duration:d,createdAt:Date.now()});renderSleep();renderDashboard();markDirty();toast('打卡成功')});
 
 // ═══════════════════════════════════════
 // AI CHAT MODULE
@@ -2000,7 +2000,88 @@ async function autoSync(){
 }
 
 document.getElementById('syncPushBtn').addEventListener('click',async()=>{dirty=false;if(!setupToken()) return;await syncPush()});
-document.getElementById('syncPullBtn').addEventListener('click',async()=>{if(!setupToken()) return;await syncPull();renderTodos();renderAccounts();renderSleep();renderCalendar();renderShopping();renderChores();renderBills();renderNotes();renderGoals();renderMoods();renderGallery()});
+document.getElementById('syncPullBtn').addEventListener('click',async()=>{if(!setupToken()) return;await syncPull();renderTodos();renderAccounts();renderSleep();renderCalendar();renderShopping();renderChores();renderBills();renderNotes();renderGoals();renderMoods();renderGallery();renderDashboard()});
+
+// ═══════════════════════════════════════
+// 首页看板
+// ═══════════════════════════════════════
+async function renderDashboard(){
+  // 更新日期
+  const now=new Date();
+  document.getElementById('homeDate').textContent=now.toLocaleDateString('zh-CN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  
+  // 1. 待办完成率
+  const todos=await getAll('todos');
+  const total=todos.length;
+  const done=todos.filter(t=>t.done).length;
+  const percent=total?Math.round((done/total)*100):0;
+  document.getElementById('dashTodoValue').textContent=percent+'%';
+  document.getElementById('dashTodoBar').style.width=percent+'%';
+  document.getElementById('dashTodoDetail').textContent=`${done}/${total} 已完成`;
+  
+  // 2. 本月收支
+  const accounts=await getAll('accounts');
+  const thisMonth=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0');
+  const monthAccts=accounts.filter(a=>a.date.startsWith(thisMonth));
+  const income=monthAccts.filter(a=>a.type==='income').reduce((sum,a)=>sum+a.amount,0);
+  const expense=monthAccts.filter(a=>a.type==='expense').reduce((sum,a)=>sum+a.amount,0);
+  const balance=income-expense;
+  document.getElementById('dashAcctValue').textContent='¥'+balance.toFixed(2);
+  // 柱状图
+  const chartEl=document.getElementById('dashAcctChart');
+  const cats=['餐饮','交通','购物','房租','娱乐','医疗','教育','其他'];
+  const catData=cats.map(cat=>monthAccts.filter(a=>a.category===cat&&a.type==='expense').reduce((sum,a)=>sum+a.amount,0));
+  const max=Math.max(...catData,1);
+  chartEl.innerHTML=cats.map((cat,i)=>`<div class="dash-bar" style="height:${(catData[i]/max)*60}px;background:${i%2===0?'var(--mod-acct)':'var(--mod-cal)'}" title="${cat}: ¥${catData[i].toFixed(2)}"></div>`).join('');
+  
+  // 3. 今日日程
+  const events=await getAll('events');
+  const todayStr=now.toISOString().split('T')[0];
+  const todayEvents=events.filter(e=>e.date===todayStr).sort((a,b)=>a.time.localeCompare(b.time));
+  const scheduleList=document.getElementById('dashScheduleList');
+  if(todayEvents.length){
+    scheduleList.innerHTML=todayEvents.map(e=>`<li><span class="dash-schedule-time">${e.time}</span><span class="dash-schedule-title">${esc(e.title)}</span></li>`).join('');
+  }else{
+    scheduleList.innerHTML='<li style="text-align:center;color:var(--text3);font-size:.8rem;padding:12px">今日无日程安排</li>';
+  }
+  
+  // 4. 作息打卡进度
+  const sleeps=await getAll('sleeps');
+  const thisWeek=()=>{
+    const start=new Date(now);start.setDate(now.getDate()-now.getDay());start.setHours(0,0,0,0);
+    const end=new Date(start);end.setDate(start.getDate()+6);end.setHours(23,59,59,999);
+    return sleeps.filter(s=>s.date>=start.toISOString().split('T')[0]&&s.date<=end.toISOString().split('T')[0]);
+  }();
+  const weekCount=thisWeek.length;
+  const target=7;
+  const sleepPercent=Math.round((weekCount/target)*100);
+  document.getElementById('dashSleepValue').textContent=weekCount+'/'+target;
+  document.getElementById('dashSleepBar').style.width=sleepPercent+'%';
+  document.getElementById('dashSleepDetail').textContent=`本周已打卡 ${weekCount} 天`;
+  
+  // 5. 快速操作
+  const quickActions=document.getElementById('quickActions');
+  const actions=[
+    {icon:'📝',text:'添加待办',page:'todo',color:'var(--mod-todo)'},
+    {icon:'💰',text:'记一笔',page:'accounting',color:'var(--mod-acct)'},
+    {icon:'📅',text:'添加日程',page:'calendar',color:'var(--mod-cal)'},
+    {icon:'🌙',text:'睡眠打卡',page:'sleep',color:'var(--mod-sleep)'}
+  ];
+  quickActions.innerHTML=actions.map(a=>`<button class="quick-action" data-page="${a.page}" style="--btn-color:${a.color}">${a.icon}<span>${a.text}</span></button>`).join('');
+  quickActions.querySelectorAll('.quick-action').forEach(btn=>{btn.addEventListener('click',()=>{activateNavPage(btn.dataset.page)})});
+  
+  // 6. 每日治愈短句
+  const quotes=[
+    {text:'今天也是值得期待的一天，慢慢来，比较快。',author:'—— 小马'},
+    {text:'不必追赶别人的脚步，你自有你的节奏和风景。',author:'—— 小马'},
+    {text:'累了就休息，但不要放弃。休息是为了走更远的路。',author:'—— 小马'},
+    {text:'每一个微小的进步，都值得被看见和庆祝。',author:'—— 小马'},
+    {text:'今天你努力了，就是最棒的一天。',author:'—— 小马'}
+  ];
+  const quote=quotes[now.getDate()%quotes.length];
+  document.getElementById('dashQuoteText').textContent=quote.text;
+  document.getElementById('dashQuoteAuthor').textContent=quote.author;
+}
 
 // ═══════════════════════════════════════
 // INIT
@@ -2019,7 +2100,7 @@ async function init(){
       if(!pulled) setSyncStatus('idle','待同步');
     }
     
-    await Promise.all([renderTodos(),renderAccounts(),renderSleep(),renderShopping(),renderChores(),renderBills(),renderNotes(),renderGoals(),renderMoods(),renderGallery(),renderAddresses()]);
+    await Promise.all([renderTodos(),renderAccounts(),renderSleep(),renderShopping(),renderChores(),renderBills(),renderNotes(),renderGoals(),renderMoods(),renderGallery(),renderAddresses(),renderDashboard()]);
     loadFocusStats();
     // Start auto-sync
     syncTimer = setInterval(autoSync, SYNC_INTERVAL);
