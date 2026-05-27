@@ -1082,6 +1082,16 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-hei
       </div>
       <ul class="todo-list" id="billList"></ul>
     </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">地址簿</span><button class="btn btn-primary btn-sm" id="addressAddBtn">+ 添加</button></div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <input type="text" class="input" id="addressName" placeholder="姓名" maxlength="50" style="min-width:120px">
+        <input type="tel" class="input" id="addressPhone" placeholder="电话" maxlength="20" style="width:140px">
+        <input type="text" class="input" id="addressAddr" placeholder="地址" maxlength="200" style="flex:1;min-width:200px">
+        <select class="select" id="addressType" style="width:100px"><option value="亲友">亲友</option><option value="同事">同事</option><option value="服务">服务</option><option value="其他">其他</option></select>
+      </div>
+      <ul class="todo-list" id="addressList"></ul>
+    </div>
   </section>
 
   <!-- ====== STUDY PAGE ====== -->
@@ -1939,6 +1949,23 @@ document.getElementById('filterCategory').addEventListener('change',renderGaller
 document.getElementById('searchImages').addEventListener('input',renderGallery);
 
 // ═══════════════════════════════════════
+// 地址簿
+// ═══════════════════════════════════════
+async function renderAddresses(){
+  const list=document.getElementById('addressList'),items=await getAll('addresses');
+  if(!items.length){list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">地址簿为空</li>';return}
+  list.innerHTML=items.map(i=>'<li style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:500">'+esc(i.name)+' <span style="font-size:.75rem;color:var(--text2);background:var(--surface2);padding:2px 6px;border-radius:4px;margin-left:6px">'+esc(i.type)+'</span></div><div style="font-size:.8rem;color:var(--text2)">'+esc(i.phone)+'</div><div style="font-size:.8rem;color:var(--text3);max-width:400px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(i.addr)+'</div></div><button class="btn-icon" data-address-del="'+i.id+'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></li>').join('');
+  list.querySelectorAll('[data-address-del]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('addresses',+btn.dataset.addressDel);renderAddresses();markDirty();toast('已删除')})});
+}
+document.getElementById('addressAddBtn').addEventListener('click',async()=>{
+  const name=document.getElementById('addressName').value.trim(),phone=document.getElementById('addressPhone').value.trim(),addr=document.getElementById('addressAddr').value.trim(),type=document.getElementById('addressType').value;
+  if(!name||!phone||!addr) return toast('请填写完整信息');
+  await add('addresses',{name,phone,addr,type,createdAt:Date.now()});
+  document.getElementById('addressName').value='';document.getElementById('addressPhone').value='';document.getElementById('addressAddr').value='';
+  renderAddresses();markDirty();toast('地址已保存');
+});
+
+// ═══════════════════════════════════════
 // TOKEN SETUP
 // ═══════════════════════════════════════
 function setupToken(){
@@ -1992,7 +2019,7 @@ async function init(){
       if(!pulled) setSyncStatus('idle','待同步');
     }
     
-    await Promise.all([renderTodos(),renderAccounts(),renderSleep(),renderShopping(),renderChores(),renderBills(),renderNotes(),renderGoals(),renderMoods(),renderGallery()]);
+    await Promise.all([renderTodos(),renderAccounts(),renderSleep(),renderShopping(),renderChores(),renderBills(),renderNotes(),renderGoals(),renderMoods(),renderGallery(),renderAddresses()]);
     loadFocusStats();
     // Start auto-sync
     syncTimer = setInterval(autoSync, SYNC_INTERVAL);
