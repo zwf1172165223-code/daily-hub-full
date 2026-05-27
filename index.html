@@ -652,6 +652,9 @@ function setSyncStatus(cls,label){
   dot.className='sync-status '+cls; lbl.textContent=label;
 }
 
+// Click sync label to trigger token input
+document.getElementById('syncLabel').addEventListener('click',()=>{if(!GITHUB_TOKEN) setupToken()});
+
 // ─── Theme ───
 (function(){
   const s=localStorage.getItem('dh-theme');
@@ -1090,6 +1093,25 @@ document.getElementById('filterCategory').addEventListener('change',renderGaller
 document.getElementById('searchImages').addEventListener('input',renderGallery);
 
 // ═══════════════════════════════════════
+// TOKEN SETUP
+// ═══════════════════════════════════════
+function setupToken(){
+  if(!GITHUB_TOKEN){
+    const token = prompt('请输入 GitHub Token（用于云同步）：');
+    if(token){
+      GITHUB_TOKEN = token;
+      localStorage.setItem('dh-gh-token', token);
+      toast('Token已保存');
+      return true;
+    } else {
+      toast('未提供Token，同步功能将不可用');
+      return false;
+    }
+  }
+  return true;
+}
+
+// ═══════════════════════════════════════
 // SYNC CONTROLS
 // ═══════════════════════════════════════
 let dirty = false;
@@ -1099,12 +1121,13 @@ function markDirty(){ dirty = true; }
 
 async function autoSync(){
   if(!dirty) return;
+  if(!GITHUB_TOKEN) return;
   dirty = false;
   await syncPush();
 }
 
-document.getElementById('syncPushBtn').addEventListener('click',async()=>{dirty=false;await syncPush()});
-document.getElementById('syncPullBtn').addEventListener('click',async()=>{await syncPull();renderTodos();renderAccounts();renderSleep();renderCalendar();renderShopping();renderChores();renderBills();renderNotes();renderGoals();renderMoods();renderGallery()});
+document.getElementById('syncPushBtn').addEventListener('click',async()=>{dirty=false;if(!setupToken()) return;await syncPush()});
+document.getElementById('syncPullBtn').addEventListener('click',async()=>{if(!setupToken()) return;await syncPull();renderTodos();renderAccounts();renderSleep();renderCalendar();renderShopping();renderChores();renderBills();renderNotes();renderGoals();renderMoods();renderGallery()});
 
 // ═══════════════════════════════════════
 // INIT
@@ -1112,10 +1135,17 @@ document.getElementById('syncPullBtn').addEventListener('click',async()=>{await 
 async function init(){
   try{
     db = await openDB();
-    // Pull first, then render
-    setSyncStatus('syncing','拉取云端数据…');
-    const pulled = await syncPull();
-    if(!pulled) setSyncStatus('idle','待同步');
+    
+    // Check if token exists on init
+    if(!GITHUB_TOKEN){
+      setSyncStatus('idle','点击同步栏输入Token');
+    } else {
+      // Pull first, then render
+      setSyncStatus('syncing','拉取云端数据…');
+      const pulled = await syncPull();
+      if(!pulled) setSyncStatus('idle','待同步');
+    }
+    
     await Promise.all([renderTodos(),renderAccounts(),renderSleep(),renderShopping(),renderChores(),renderBills(),renderNotes(),renderGoals(),renderMoods(),renderGallery()]);
     loadFocusStats();
     // Start auto-sync
