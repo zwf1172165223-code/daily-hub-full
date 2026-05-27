@@ -622,8 +622,13 @@ async function syncPush(){
     setTimeout(()=>setSyncStatus('idle','待同步'), 3000);
     return true;
   }catch(e){
-    setSyncStatus('error','同步失败: '+e.message);
-    setTimeout(()=>setSyncStatus('idle','待同步'), 5000);
+    if(e.message.includes('401')){
+      localStorage.removeItem('dh-gh-token'); GITHUB_TOKEN = '';
+      setSyncStatus('error','Token已失效，点击这里输入新Token');
+    }else{
+      setSyncStatus('error','同步失败: '+e.message);
+      setTimeout(()=>setSyncStatus('idle','待同步'), 5000);
+    }
     return false;
   }
 }
@@ -641,8 +646,13 @@ async function syncPull(){
     setTimeout(()=>setSyncStatus('idle','待同步'), 3000);
     return true;
   }catch(e){
-    setSyncStatus('error','拉取失败: '+e.message);
-    setTimeout(()=>setSyncStatus('idle','待同步'), 5000);
+    if(e.message.includes('401')){
+      localStorage.removeItem('dh-gh-token'); GITHUB_TOKEN = '';
+      setSyncStatus('error','Token已失效，点击这里输入新Token');
+    }else{
+      setSyncStatus('error','拉取失败: '+e.message);
+      setTimeout(()=>setSyncStatus('idle','待同步'), 5000);
+    }
     return false;
   }
 }
@@ -652,8 +662,13 @@ function setSyncStatus(cls,label){
   dot.className='sync-status '+cls; lbl.textContent=label;
 }
 
-// Click sync label to trigger token input
-document.getElementById('syncLabel').addEventListener('click',()=>{if(!GITHUB_TOKEN) setupToken()});
+// Click sync label to trigger token input  
+document.getElementById('syncLabel').addEventListener('click',()=>{
+  const lbl = document.getElementById('syncLabel');
+  if(!GITHUB_TOKEN || (lbl && lbl.textContent.includes('Token已失效'))){
+    if(setupToken()){ syncPush(); }
+  }
+});
 
 // ─── Theme ───
 (function(){
