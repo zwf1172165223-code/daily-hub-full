@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Hub · 个人日常助手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: oklch(0.985 0.002 95);--surface: oklch(1 0 0);--surface2: oklch(0.97 0.005 95);
+  --text: oklch(0.22 0.01 85);--text2: oklch(0.5 0.01 85);--text3: oklch(0.7 0.01 85);
+  --border: oklch(0.88 0.01 85);--accent: oklch(0.55 0.14 255);
+  --accent2: oklch(0.6 0.16 30);--accent3: oklch(0.55 0.16 160);
+  --accent4: oklch(0.55 0.14 300);--accent5: oklch(0.6 0.14 50);
+  --shadow:0 1px 3px oklch(0 0 0/0.06),0 1px 2px oklch(0 0 0/0.04);--shadow-lg:0 4px 16px oklch(0 0 0/0.08);
+  --radius:10px;--radius-sm:6px;
+  --font-serif:'Noto Serif SC','Songti SC',serif;--font-sans:'Noto Sans SC','PingFang SC',-apple-system,sans-serif;
+  --transition:160ms ease;
+}
+[data-theme=dark]{
+  --bg:oklch(0.16 0.005 85);--surface:oklch(0.2 0.005 85);--surface2:oklch(0.23 0.005 85);
+  --text:oklch(0.92 0.005 85);--text2:oklch(0.6 0.005 85);--text3:oklch(0.42 0.005 85);
+  --border:oklch(0.28 0.005 85);--shadow:0 1px 3px oklch(0 0 0/0.2);--shadow-lg:0 4px 16px oklch(0 0 0/0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:clamp(13px,1.1vw,15px)}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex;-webkit-font-smoothing:antialiased}
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:100;transition:transform var(--transition)}
+.sidebar-brand{padding:20px 20px 16px;font-family:var(--font-serif);font-size:1.15rem;font-weight:700;letter-spacing:.03em;color:var(--text);user-select:none}
+.sidebar-nav{flex:1;padding:0 10px;display:flex;flex-direction:column;gap:2px}
+.nav-section-label{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:12px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:.88rem;color:var(--text2);transition:all var(--transition);border:none;background:none;width:100%;text-align:left;font-family:var(--font-sans);position:relative}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--surface2);color:var(--text);font-weight:500}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:2px;background:var(--accent)}
+.nav-item.locked{opacity:.4;cursor:not-allowed;pointer-events:none}
+.nav-icon{width:18px;height:18px;flex-shrink:0}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.theme-btn{width:32px;height:32px;border:none;background:none;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:background var(--transition)}
+.theme-btn:hover{background:var(--surface2)}
+.version-tag{font-size:.65rem;color:var(--text3)}
+
+/* Sync bar */
+.sync-bar{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:.75rem;color:var(--text2)}
+.sync-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sync-status.idle{background:var(--text3)}
+.sync-status.syncing{background:var(--accent5);animation:pulse 1s infinite}
+.sync-status.synced{background:var(--accent3)}
+.sync-status.error{background:var(--accent2)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sync-actions{margin-left:auto;display:flex;gap:4px}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.page{display:none;flex:1;padding:28px 32px;max-width:960px;width:100%}
+.page.active{display:block}
+.page-header{margin-bottom:24px}
+.page-title{font-family:var(--font-serif);font-size:1.5rem;font-weight:700;margin-bottom:4px}
+.page-subtitle{font-size:.82rem;color:var(--text2)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-weight:600;font-size:.95rem}
+.btn{font-family:var(--font-sans);font-size:.82rem;font-weight:500;padding:7px 16px;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{opacity:.88}
+.btn-primary:active{transform:scale(.97)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-sm{padding:4px 10px;font-size:.75rem}
+.btn-xs{padding:2px 8px;font-size:.7rem;border-radius:4px}
+.btn-icon{width:30px;height:30px;padding:0;border-radius:50%;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all var(--transition)}
+.btn-icon:hover{background:var(--surface2);color:var(--text)}
+.input,.select,.textarea{font-family:var(--font-sans);font-size:.85rem;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);transition:border-color var(--transition);width:100%}
+.input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px oklch(0.55 0.14 255/.1)}
+.textarea{resize:vertical;min-height:70px}
+.input::placeholder,.textarea::placeholder{color:var(--text3)}
+
+/* Todo */
+.todo-input-row{display:flex;gap:8px;margin-bottom:16px}
+.todo-input-row .input{flex:1}
+.todo-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.todo-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);transition:all var(--transition)}
+.todo-item:hover{background:var(--border)}
+.todo-check{width:20px;height:20px;border:2px solid var(--text3);border-radius:50%;cursor:pointer;flex-shrink:0;transition:all var(--transition);display:flex;align-items:center;justify-content:center;background:none}
+.todo-check.done{background:var(--accent3);border-color:var(--accent3)}
+.todo-check.done::after{content:'';width:6px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.todo-text{flex:1;font-size:.88rem}
+.todo-text.done{text-decoration:line-through;color:var(--text3)}
+.todo-cat{font-size:.68rem;padding:2px 8px;border-radius:10px;background:oklch(0.55 0.14 255/.1);color:var(--accent);white-space:nowrap}
+.todo-summary{display:flex;gap:16px;font-size:.78rem;color:var(--text2);margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* Accounting */
+.acct-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.acct-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.acct-stat-value{font-family:var(--font-serif);font-size:1.5rem;font-weight:700}
+.acct-stat-value.income{color:var(--accent3)}.acct-stat-value.expense{color:var(--accent2)}
+.acct-stat-label{font-size:.72rem;color:var(--text2);margin-top:2px}
+.acct-form{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.acct-form .input{flex:1;min-width:100px}
+.acct-form .select{width:100px;flex-shrink:0}
+.acct-list{list-style:none;display:flex;flex-direction:column;gap:4px;max-height:360px;overflow-y:auto}
+.acct-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.84rem}
+.acct-item-left{display:flex;align-items:center;gap:8px}
+.acct-cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.acct-amount{font-weight:600}
+.acct-amount.income{color:var(--accent3)}.acct-amount.expense{color:var(--accent2)}
+
+/* Calendar */
+.calendar-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.calendar-month{font-family:var(--font-serif);font-size:1.1rem;font-weight:600}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin-bottom:20px}
+.calendar-day-header{font-size:.7rem;color:var(--text3);padding:6px 0;font-weight:500}
+.calendar-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);font-size:.82rem;cursor:pointer;transition:all var(--transition);position:relative}
+.calendar-day:hover{background:var(--surface2)}
+.calendar-day.today{background:var(--accent);color:#fff;font-weight:600}
+.calendar-day.other-month{color:var(--text3)}
+.calendar-day.has-event::after{content:'';position:absolute;bottom:4px;width:5px;height:5px;border-radius:50%;background:var(--accent2)}
+.calendar-day.today.has-event::after{background:#fff}
+.event-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.event-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.84rem}
+.event-date{font-size:.72rem;color:var(--text2);white-space:nowrap;min-width:60px}
+.event-text{flex:1}
+
+/* Sleep */
+.sleep-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.sleep-stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center}
+.sleep-stat-value{font-family:var(--font-serif);font-size:2rem;font-weight:700;color:var(--accent4)}
+.sleep-stat-label{font-size:.75rem;color:var(--text2);margin-top:4px}
+.sleep-log{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.sleep-log .input{width:130px;flex-shrink:0}
+.sleep-history{list-style:none;display:flex;flex-direction:column;gap:4px;max-height:240px;overflow-y:auto}
+.sleep-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.82rem}
+.sleep-duration{font-weight:600;color:var(--accent4)}
+
+/* AI Chat */
+.chat-container{display:flex;flex-direction:column;height:calc(100vh - 200px);min-height:400px}
+.chat-messages{flex:1;overflow-y:auto;padding:8px 0;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:80%;padding:10px 14px;border-radius:14px;font-size:.85rem;line-height:1.6;animation:msgIn 200ms ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.chat-msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.chat-msg.ai{align-self:flex-start;background:var(--surface2);border-bottom-left-radius:4px}
+.chat-input-row{display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border)}
+.chat-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chat-chip{padding:5px 12px;border:1px solid var(--border);border-radius:16px;font-size:.76rem;cursor:pointer;background:var(--surface);color:var(--text2);transition:all var(--transition)}
+.chat-chip:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;z-index:200;background:oklch(0 0 0/.35);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 150ms ease-out}
+@keyframes fadeIn{from{opacity:0}}
+.modal{background:var(--surface);border-radius:var(--radius);width:100%;max-width:440px;box-shadow:var(--shadow-lg);animation:slideUp 200ms ease-out}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.modal-title{font-weight:600;font-size:.95rem}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:12px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--border)}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 20px;border-radius:20px;font-size:.8rem;z-index:500;animation:toastIn 300ms ease-out,toastOut 300ms 1.7s ease-in forwards;pointer-events:none}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}}
+@keyframes toastOut{from{opacity:1}to{opacity:0}}
+
+@media(max-width:700px){
+  .sidebar{width:60px;min-width:60px}.sidebar-brand{font-size:0;padding:16px 10px}
+  .sidebar-brand::after{content:'DH';font-size:.9rem}
+  .nav-item{justify-content:center;padding:10px}.nav-item span:not(.nav-icon){display:none}
+  .nav-section-label{display:none}.page{padding:20px 16px}
+  .acct-summary{grid-template-columns:1fr}.sleep-grid{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">Daily Hub</div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">核心工具</div>
+    <button class="nav-item active" data-page="todo"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>待办备忘</span></button>
+    <button class="nav-item" data-page="accounting"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>极简记账</span></button>
+    <button class="nav-item" data-page="calendar"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>日程日历</span></button>
+    <button class="nav-item" data-page="sleep"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><span>作息打卡</span></button>
+    <button class="nav-item" data-page="ai"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>AI 助手</span></button>
+    <div class="nav-section-label">生活居家</div>
+    <button class="nav-item" data-page="home-life"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 9v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9"/><path d="M9 22V12h6v10"/><path d="m2 10 10-8 10 8"/></svg><span>生活居家</span></button>
+    <div class="nav-section-label">学习效率</div>
+    <button class="nav-item" data-page="study"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg><span>学习效率</span></button>
+    <div class="nav-section-label">休闲治愈</div>
+    <button class="nav-item" data-page="relax"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><span>休闲治愈</span></button>
+    <div class="nav-section-label">个人空间</div>
+    <button class="nav-item" data-page="gallery"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg><span>图片相册</span></button>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="theme-btn" id="themeToggle" title="切换主题"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/></svg></button>
+    <span class="version-tag">v1.1</span>
+  </div>
+</aside>
+
+<main class="main">
+  <!-- Sync Bar -->
+  <div class="sync-bar">
+    <span class="sync-status idle" id="syncDot"></span>
+    <span id="syncLabel">离线</span>
+    <span class="sync-actions">
+      <button class="btn btn-xs btn-ghost" id="syncPullBtn" title="从云端拉取">↓ 拉取</button>
+      <button class="btn btn-xs btn-ghost" id="syncPushBtn" title="推送到云端">↑ 推送</button>
+    </span>
+  </div>
+
+  <!-- ====== TODO PAGE ====== -->
+  <section class="page active" id="page-todo">
+    <div class="page-header"><h1 class="page-title">待办 & 备忘</h1><p class="page-subtitle">随手记录，智能分类，让每一天井井有条</p></div>
+    <div class="card">
+      <div class="todo-input-row">
+        <input type="text" class="input" id="todoInput" placeholder="添加待办事项…" maxlength="200">
+        <select class="select" id="todoCat" style="width:100px"><option value="工作">工作</option><option value="生活">生活</option><option value="学习">学习</option><option value="健康">健康</option><option value="其他">其他</option></select>
+        <button class="btn btn-primary" id="todoAddBtn">添加</button>
+      </div>
+      <ul class="todo-list" id="todoList"></ul>
+      <div class="todo-summary" id="todoSummary"></div>
+    </div>
+  </section>
+
+  <!-- ====== ACCOUNTING PAGE ====== -->
+  <section class="page" id="page-accounting">
+    <div class="page-header"><h1 class="page-title">极简记账</h1><p class="page-subtitle">三秒记账，自动归类，消费一目了然</p></div>
+    <div class="acct-summary" id="acctSummary"></div>
+    <div class="card">
+      <div class="acct-form">
+        <select class="select" id="acctType" style="width:80px"><option value="expense">支出</option><option value="income">收入</option></select>
+        <input type="number" class="input" id="acctAmount" placeholder="金额" min="0.01" step="0.01" style="width:120px">
+        <select class="select" id="acctCat" style="width:100px"><option value="餐饮">餐饮</option><option value="交通">交通</option><option value="购物">购物</option><option value="房租">房租</option><option value="娱乐">娱乐</option><option value="医疗">医疗</option><option value="教育">教育</option><option value="其他">其他</option></select>
+        <input type="text" class="input" id="acctNote" placeholder="备注（可选）" maxlength="50" style="width:140px">
+        <button class="btn btn-primary" id="acctAddBtn">记一笔</button>
+      </div>
+      <ul class="acct-list" id="acctList"></ul>
+    </div>
+  </section>
+
+  <!-- ====== CALENDAR PAGE ====== -->
+  <section class="page" id="page-calendar">
+    <div class="page-header"><h1 class="page-title">日程日历</h1><p class="page-subtitle">重要日子不遗漏，生日、纪念日、缴费提醒</p></div>
+    <div class="card">
+      <div class="calendar-nav"><button class="btn btn-ghost btn-sm" id="calPrev">◀ 上月</button><span class="calendar-month" id="calMonth"></span><button class="btn btn-ghost btn-sm" id="calNext">下月 ▶</button></div>
+      <div class="calendar-grid" id="calGrid"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><span style="font-weight:600;font-size:.9rem">近期日程</span><button class="btn btn-primary btn-sm" id="eventAddBtn">+ 添加日程</button></div>
+      <ul class="event-list" id="eventList"></ul>
+    </div>
+  </section>
+
+  <!-- ====== SLEEP PAGE ====== -->
+  <section class="page" id="page-sleep">
+    <div class="page-header"><h1 class="page-title">作息打卡</h1><p class="page-subtitle">记录睡眠，分析规律，养成好习惯</p></div>
+    <div class="sleep-grid" id="sleepStats"></div>
+    <div class="card">
+      <div class="sleep-log">
+        <input type="time" class="input" id="sleepStart" value="23:00"><span style="align-self:center;color:var(--text2)">→</span><input type="time" class="input" id="sleepEnd" value="07:00">
+        <input type="date" class="input" id="sleepDate" style="width:140px"><button class="btn btn-primary" id="sleepAddBtn">打卡</button>
+      </div>
+      <ul class="sleep-history" id="sleepHistory"></ul>
+    </div>
+  </section>
+
+  <!-- ====== AI PAGE ====== -->
+  <section class="page" id="page-ai">
+    <div class="page-header"><h1 class="page-title">AI 私人助手</h1><p class="page-subtitle">你的专属助理，梳理思路、制定计划、解答问题</p></div>
+    <div class="card" style="flex:1;display:flex;flex-direction:column">
+      <div class="chat-container">
+        <div class="chat-suggestions" id="chatSuggestions"><button class="chat-chip">帮我梳理今天的待办</button><button class="chat-chip">分析本周消费情况</button><button class="chat-chip">制定一个早睡计划</button><button class="chat-chip">推荐周末活动</button></div>
+        <div class="chat-messages" id="chatMessages"><div class="chat-msg ai">你好，我是你的私人 AI 助手。我可以帮你梳理待办、分析记账数据、制定计划，或者解答日常问题。试试问我点什么吧。</div></div>
+        <div class="chat-input-row"><input type="text" class="input" id="chatInput" placeholder="输入你的问题…" maxlength="500"><button class="btn btn-primary" id="chatSendBtn">发送</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== HOME-LIFE PAGE ====== -->
+  <section class="page" id="page-home-life">
+    <div class="page-header"><h1 class="page-title">生活居家</h1><p class="page-subtitle">购物清单、家务提醒、缴费管理，让生活井井有条</p></div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">购物清单</span><button class="btn btn-primary btn-sm" id="shoppingAddBtn">+ 添加</button></div>
+      <div class="shopping-input-row" style="display:flex;gap:8px;margin-bottom:16px">
+        <input type="text" class="input" id="shoppingItem" placeholder="物品名称" maxlength="100">
+        <input type="number" class="input" id="shoppingQty" placeholder="数量" min="1" style="width:80px">
+        <select class="select" id="shoppingCat" style="width:100px"><option value="食品">食品</option><option value="日用品">日用品</option><option value="家居">家居</option><option value="其他">其他</option></select>
+      </div>
+      <ul class="todo-list" id="shoppingList"></ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">家务提醒</span><button class="btn btn-primary btn-sm" id="choreAddBtn">+ 添加</button></div>
+      <div class="chore-input-row" style="display:flex;gap:8px;margin-bottom:16px">
+        <input type="text" class="input" id="choreTask" placeholder="家务内容" maxlength="100">
+        <select class="select" id="choreFreq" style="width:120px"><option value="daily">每天</option><option value="weekly">每周</option><option value="biweekly">每两周</option><option value="monthly">每月</option></select>
+        <input type="date" class="input" id="choreNext" style="width:140px">
+      </div>
+      <ul class="todo-list" id="choreList"></ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">缴费提醒</span><button class="btn btn-primary btn-sm" id="billAddBtn">+ 添加</button></div>
+      <div class="bill-input-row" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <input type="text" class="input" id="billName" placeholder="费用名称" maxlength="50" style="min-width:120px">
+        <input type="number" class="input" id="billAmount" placeholder="金额" min="0.01" step="0.01" style="width:100px">
+        <input type="date" class="input" id="billDue" style="width:140px">
+        <select class="select" id="billType" style="width:100px"><option value="水电">水电</option><option value="燃气">燃气</option><option value="物业">物业</option><option value="网络">网络</option><option value="其他">其他</option></select>
+      </div>
+      <ul class="todo-list" id="billList"></ul>
+    </div>
+  </section>
+
+  <!-- ====== STUDY PAGE ====== -->
+  <section class="page" id="page-study">
+    <div class="page-header"><h1 class="page-title">学习效率</h1><p class="page-subtitle">学习计时、笔记管理、目标追踪，提升学习效果</p></div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">学习计时器</span><span id="timerDisplay" style="font-family:var(--font-serif);font-size:1.8rem;font-weight:700;color:var(--accent)">25:00</span></div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;justify-content:center">
+        <button class="btn btn-primary" id="timerStartBtn">开始</button>
+        <button class="btn btn-ghost" id="timerPauseBtn">暂停</button>
+        <button class="btn btn-ghost" id="timerResetBtn">重置</button>
+        <select class="select" id="timerDuration" style="width:100px"><option value="25">25分钟</option><option value="45">45分钟</option><option value="60">60分钟</option></select>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:12px;font-size:.78rem;color:var(--text2)">
+        <span>今日专注: <strong id="todayFocus">0</strong>分钟</span>
+        <span>本周专注: <strong id="weekFocus">0</strong>分钟</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">学习笔记</span><button class="btn btn-primary btn-sm" id="noteAddBtn">+ 新建</button></div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input type="text" class="input" id="noteTitle" placeholder="笔记标题" maxlength="100">
+        <select class="select" id="noteSubject" style="width:120px"><option value="数学">数学</option><option value="英语">英语</option><option value="编程">编程</option><option value="设计">设计</option><option value="其他">其他</option></select>
+      </div>
+      <textarea class="textarea" id="noteContent" placeholder="记录学习笔记…" rows="6"></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+        <button class="btn btn-ghost" id="noteClearBtn">清空</button>
+        <button class="btn btn-primary" id="noteSaveBtn">保存</button>
+      </div>
+      <ul class="todo-list" id="noteList" style="margin-top:20px"></ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">学习目标</span><button class="btn btn-primary btn-sm" id="goalAddBtn">+ 添加</button></div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <input type="text" class="input" id="goalText" placeholder="目标描述" maxlength="200" style="flex:1;min-width:200px">
+        <input type="date" class="input" id="goalDeadline" style="width:140px">
+        <select class="select" id="goalPriority" style="width:100px"><option value="高">高</option><option value="中">中</option><option value="低">低</option></select>
+      </div>
+      <ul class="todo-list" id="goalList"></ul>
+    </div>
+  </section>
+
+  <!-- ====== RELAX PAGE ====== -->
+  <section class="page" id="page-relax">
+    <div class="page-header"><h1 class="page-title">休闲治愈</h1><p class="page-subtitle">心情记录、放松音乐、小游戏，给自己充充电</p></div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">心情日记</span><button class="btn btn-primary btn-sm" id="moodAddBtn">+ 记录</button></div>
+      <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center">
+        <span style="font-size:.85rem;color:var(--text2)">今天心情:</span>
+        <div style="display:flex;gap:4px">
+          <button class="mood-btn" data-mood="1">😢</button><button class="mood-btn" data-mood="2">😔</button>
+          <button class="mood-btn" data-mood="3">😐</button><button class="mood-btn" data-mood="4">🙂</button>
+          <button class="mood-btn" data-mood="5">😊</button>
+        </div>
+        <input type="date" class="input" id="moodDate" style="width:140px;margin-left:auto">
+      </div>
+      <textarea class="textarea" id="moodNote" placeholder="记录今天的心情和想法…" rows="4"></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+        <button class="btn btn-ghost" id="moodClearBtn">清空</button>
+        <button class="btn btn-primary" id="moodSaveBtn">保存</button>
+      </div>
+      <div id="moodChart" style="margin-top:20px;height:120px;display:flex;align-items:flex-end;gap:4px;justify-content:center"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">放松音乐</span><button class="btn btn-primary btn-sm" id="musicToggleBtn">▶ 播放</button></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="musicTitle" style="font-size:.9rem;color:var(--text)">自然白噪音</span>
+          <span id="musicTime" style="font-size:.75rem;color:var(--text2);margin-left:auto">0:00 / 5:00</span>
+        </div>
+        <div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden">
+          <div id="musicProgress" style="width:0%;height:100%;background:var(--accent);transition:width 1s linear"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center">
+          <button class="btn btn-ghost btn-sm" id="musicPrevBtn">⏮</button>
+          <button class="btn btn-ghost btn-sm" id="musicNextBtn">⏭</button>
+          <select class="select" id="musicSelect" style="width:140px"><option value="nature">自然白噪音</option><option value="rain">雨声</option><option value="piano">钢琴曲</option><option value="ocean">海浪</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">放松小游戏</span><button class="btn btn-primary btn-sm" id="gameStartBtn">开始游戏</button></div>
+      <div id="gameContainer" style="text-align:center;padding:20px">
+        <div id="gameCanvas" style="width:100%;height:200px;background:var(--surface2);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+          <span style="color:var(--text3)">点击开始游戏</span>
+        </div>
+        <div style="display:flex;justify-content:center;gap:12px;font-size:.85rem;color:var(--text2)">
+          <span>分数: <strong id="gameScore">0</strong></span>
+          <span>时间: <strong id="gameTime">60</strong>秒</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== GALLERY PAGE ====== -->
+  <section class="page" id="page-gallery">
+    <div class="page-header"><h1 class="page-title">图片相册</h1><p class="page-subtitle">上传、浏览、分类你的图片，打造个人视觉空间</p></div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">上传图片</span></div>
+      <div style="border:2px dashed var(--border);border-radius:var(--radius);padding:40px 20px;text-align:center;cursor:pointer;transition:all var(--transition)" id="uploadArea">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" style="margin-bottom:12px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div style="font-size:.9rem;color:var(--text2);margin-bottom:4px">点击或拖放上传图片</div>
+        <div style="font-size:.75rem;color:var(--text3)">支持 JPG、PNG、GIF，单张最大 5MB</div>
+        <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+        <input type="text" class="input" id="imageTitle" placeholder="图片标题（可选）" maxlength="100" style="flex:1;min-width:200px">
+        <select class="select" id="imageCategory" style="width:120px"><option value="生活">生活</option><option value="旅行">旅行</option><option value="美食">美食</option><option value="工作">工作</option><option value="其他">其他</option></select>
+        <button class="btn btn-primary" id="uploadBtn" disabled>上传</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">图片库</span>
+        <div style="display:flex;gap:8px">
+          <select class="select" id="filterCategory" style="width:120px;font-size:.8rem"><option value="">全部分类</option><option value="生活">生活</option><option value="旅行">旅行</option><option value="美食">美食</option><option value="工作">工作</option><option value="其他">其他</option></select>
+          <input type="text" class="input" id="searchImages" placeholder="搜索图片…" style="width:160px;font-size:.8rem">
+        </div>
+      </div>
+      <div id="galleryGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:16px;margin-top:16px"></div>
+      <div id="galleryEmpty" style="text-align:center;padding:40px;color:var(--text3);display:none">还没有图片，上传第一张吧</div>
+    </div>
+  </section>
+</main>
+
+<div id="modalContainer"></div>
+<div id="toastContainer"></div>
+
+<script>
+// 全局错误处理
+window.onerror=function(msg,src,line,col,err){
+  console.error('JS Error:',msg,'at',src,line+':'+col);
+  try{var toastContainer=document.getElementById('toastContainer');if(!toastContainer)return false;var el=document.createElement('div');el.className='toast';el.textContent='错误: '+(msg+'').substring(0,50)+' (行'+line+')';el.style.color='#f44';toastContainer.appendChild(el);setTimeout(function(){el.remove()},5000)}catch(e){}
+  return false;
+};
+
+(function(){
+'use strict';
+
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+let GITHUB_TOKEN = localStorage.getItem('dh-gh-token') || '';
+const GITHUB_USER = 'zwf1172165223-code';
+const GITHUB_DATA_REPO = 'daily-hub-data';
+const DATA_FILE = 'data.json';
+const SYNC_INTERVAL = 30000; // auto-sync every 30s
+
+// ═══════════════════════════════════════
+// IndexedDB
+// ═══════════════════════════════════════
+const DB_NAME = 'DailyHubDB', DB_VERSION = 2;
+let db = null;
+const STORES = ['todos','accounts','events','sleeps','shopping','chores','bills','notes','goals','moods','images'];
+
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e)=>{
+      const d = e.target.result;
+      const oldVersion = e.oldVersion;
+      
+      // 从版本1升级到版本2：添加新表
+      if(oldVersion < 2){
+        ['shopping','chores','bills','notes','goals','moods','images'].forEach(s=>{
+          if(!d.objectStoreNames.contains(s)) d.createObjectStore(s,{keyPath:'id',autoIncrement:true});
+        });
+      }
+      
+      // 确保所有表都存在
+      STORES.forEach(s=>{
+        if(!d.objectStoreNames.contains(s)) d.createObjectStore(s,{keyPath:'id',autoIncrement:true});
+      });
+    };
+    req.onsuccess = (e)=> resolve(e.target.result);
+    req.onerror = ()=> {
+      console.error('IndexedDB open failed:', req.error);
+      // 如果版本升级失败，尝试删除旧数据库重建
+      if(req.error && req.error.name==='VersionError'){
+        console.warn('版本错误，尝试删除旧数据库...');
+        indexedDB.deleteDatabase(DB_NAME).onsuccess=()=>{
+          console.log('旧数据库已删除，准备重建...');
+          // 降低版本号重建
+          const req2 = indexedDB.open(DB_NAME, DB_VERSION);
+          req2.onupgradeneeded = (e2)=>{
+            const d2=e2.target.result;
+            STORES.forEach(s=>{if(!d2.objectStoreNames.contains(s)) d2.createObjectStore(s,{keyPath:'id',autoIncrement:true})});
+          };
+          req2.onsuccess=(e2)=>resolve(e2.target.result);
+          req2.onerror=()=>reject(req2.error);
+        };
+      } else {
+        reject(req.error);
+      }
+    };
+  });
+}
+
+function getAll(store){return new Promise(r=>{const tx=db.transaction(store,'readonly'),req=tx.objectStore(store).getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([])})}
+function add(store,item){return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite'),req=tx.objectStore(store).add(item);req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)})}
+function put(store,item){return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite'),req=tx.objectStore(store).put(item);req.onsuccess=()=>res();req.onerror=()=>rej(req.error)})}
+function remove(store,id){return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite'),req=tx.objectStore(store).delete(id);req.onsuccess=()=>res();req.onerror=()=>rej(req.error)})}
+
+async function exportAll(){
+  const data = {};
+  for(const s of STORES) data[s] = await getAll(s);
+  return data;
+}
+
+async function importAll(data){
+  for(const s of STORES){
+    if(!data[s]) continue;
+    const tx = db.transaction(s,'readwrite'), store = tx.objectStore(s);
+    await new Promise(r=>{const req=store.clear();req.onsuccess=r});
+    for(const item of data[s]){
+      await new Promise(r=>{const req=store.add(item);req.onsuccess=r});
+    }
+  }
+}
+
+// ═══════════════════════════════════════
+// Encryption (Web Crypto API - AES-GCM)
+// ═══════════════════════════════════════
+const ENC_KEY_STR = 'daily-hub-sync-key-2024-v1.0-secure';
+
+async function getKey(){
+  const enc = new TextEncoder();
+  const keyData = enc.encode(ENC_KEY_STR);
+  const hash = await crypto.subtle.digest('SHA-256', keyData);
+  return crypto.subtle.importKey('raw', hash, {name:'AES-GCM'}, false, ['encrypt','decrypt']);
+}
+
+async function encryptData(plaintext){
+  const key = await getKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const cipher = await crypto.subtle.encrypt({name:'AES-GCM',iv}, key, enc.encode(plaintext));
+  return { iv: Array.from(iv), data: Array.from(new Uint8Array(cipher)) };
+}
+
+async function decryptData(encrypted){
+  const key = await getKey();
+  const iv = new Uint8Array(encrypted.iv);
+  const data = new Uint8Array(encrypted.data);
+  const decrypted = await crypto.subtle.decrypt({name:'AES-GCM',iv}, key, data);
+  return new TextDecoder().decode(decrypted);
+}
+
+async function toBase64(obj){
+  const json = JSON.stringify(obj);
+  const enc = new TextEncoder().encode(json);
+  let bin = '';
+  enc.forEach(b=>bin+=String.fromCharCode(b));
+  return btoa(bin);
+}
+
+async function fromBase64(b64){
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+// ═══════════════════════════════════════
+// GitHub Sync
+// ═══════════════════════════════════════
+function apiHeaders(){
+  return {
+    'Authorization':'token '+GITHUB_TOKEN,
+    'Accept':'application/vnd.github.v3+json'
+  };
+}
+
+async function getFileSha(){
+  try{
+    const resp = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_DATA_REPO}/contents/${DATA_FILE}`,{headers:apiHeaders()});
+    if(!resp.ok) return null;
+    const json = await resp.json();
+    return json.sha;
+  }catch{return null}
+}
+
+async function pushToGitHub(content){
+  const sha = await getFileSha();
+  const body = {
+    message: 'Sync '+new Date().toISOString(),
+    content: content,
+    branch: 'main'
+  };
+  if(sha) body.sha = sha;
+  const resp = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_DATA_REPO}/contents/${DATA_FILE}`,{
+    method:'PUT', headers:apiHeaders(), body:JSON.stringify(body)
+  });
+  if(!resp.ok) throw new Error('Push failed: '+resp.status);
+  return resp.json();
+}
+
+async function pullFromGitHub(){
+  try{
+    const resp = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_DATA_REPO}/contents/${DATA_FILE}`,{headers:apiHeaders()});
+    if(!resp.ok) return null;
+    const json = await resp.json();
+    return json.content;
+  }catch{return null}
+}
+
+async function syncPush(){
+  setSyncStatus('syncing','同步中…');
+  try{
+    const data = await exportAll();
+    const json = JSON.stringify(data);
+    const encrypted = await encryptData(json);
+    const b64 = await toBase64(encrypted);
+    await pushToGitHub(b64);
+    setSyncStatus('synced','已同步');
+    setTimeout(()=>setSyncStatus('idle','待同步'), 3000);
+    return true;
+  }catch(e){
+    setSyncStatus('error','同步失败: '+e.message);
+    setTimeout(()=>setSyncStatus('idle','待同步'), 5000);
+    return false;
+  }
+}
+
+async function syncPull(){
+  setSyncStatus('syncing','拉取中…');
+  try{
+    const b64 = await pullFromGitHub();
+    if(!b64){setSyncStatus('idle','云端无数据');return false}
+    const encrypted = await fromBase64(b64);
+    const json = await decryptData(encrypted);
+    const data = JSON.parse(json);
+    await importAll(data);
+    setSyncStatus('synced','已拉取');
+    setTimeout(()=>setSyncStatus('idle','待同步'), 3000);
+    return true;
+  }catch(e){
+    setSyncStatus('error','拉取失败: '+e.message);
+    setTimeout(()=>setSyncStatus('idle','待同步'), 5000);
+    return false;
+  }
+}
+
+function setSyncStatus(cls,label){
+  const dot=document.getElementById('syncDot'),lbl=document.getElementById('syncLabel');
+  dot.className='sync-status '+cls; lbl.textContent=label;
+}
+
+// ─── Theme ───
+(function(){
+  const s=localStorage.getItem('dh-theme');
+  if(s==='dark'||(!s&&matchMedia('(prefers-color-scheme:dark)').matches)) document.documentElement.setAttribute('data-theme','dark');
+})();
+const themeToggle=document.getElementById('themeToggle');
+if(themeToggle) themeToggle.addEventListener('click',()=>{
+  const c=document.documentElement.getAttribute('data-theme');
+  if(c==='dark'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('dh-theme','light')}
+  else{document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('dh-theme','dark')}
+});
+
+// ─── Navigation ───
+document.querySelectorAll('.nav-item:not(.locked)').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const page=safeGet('page-'+btn.dataset.page);
+    if(page) page.classList.add('active');
+    if(btn.dataset.page==='calendar') renderCalendar();
+    if(btn.dataset.page==='ai'){
+      const chatInput=safeGet('chatInput');
+      if(chatInput) chatInput.focus();
+    }
+  });
+});
+
+// ─── Safe DOM helpers ───
+function safeGet(id){return document.getElementById(id)}
+function safeAddListener(id,event,callback){
+  const el=safeGet(id);
+  if(el) el.addEventListener(event,callback);
+  else console.warn('Element not found:',id);
+}
+
+// ─── Toast ───
+function toast(msg){
+  const el=document.createElement('div');el.className='toast';el.textContent=msg;
+  const container=safeGet('toastContainer');
+  if(container) container.appendChild(el);
+  setTimeout(()=>el.remove(),2200);
+}
+
+// ─── Modal ───
+function showModal(title,bodyHTML,footerHTML){
+  const c=document.getElementById('modalContainer');
+  if(!c){console.error('modalContainer not found');return}
+  c.innerHTML='<div class="modal-overlay" id="modalOverlay"><div class="modal"><div class="modal-header"><span class="modal-title">'+title+'</span><button class="btn-icon" id="modalCloseBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div class="modal-body">'+bodyHTML+'</div>'+(footerHTML?'<div class="modal-footer">'+footerHTML+'</div>':'')+'</div></div>';
+  const overlay=document.getElementById('modalOverlay');
+  const closeBtn=document.getElementById('modalCloseBtn');
+  if(overlay) overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal()});
+  if(closeBtn) closeBtn.addEventListener('click',closeModal);
+  document.addEventListener('keydown',escClose);
+}
+function closeModal(){document.getElementById('modalContainer').innerHTML='';document.removeEventListener('keydown',escClose)}
+function escClose(e){if(e.key==='Escape')closeModal()}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+
+// ═══════════════════════════════════════
+// TODO MODULE
+// ═══════════════════════════════════════
+async function renderTodos(){
+  const todos=await getAll('todos');
+  const list=document.getElementById('todoList');
+  const active=todos.filter(t=>!t.done), done=todos.filter(t=>t.done);
+  const all=[...active,...done];
+  if(!all.length) list.innerHTML='<li style="text-align:center;padding:32px;color:var(--text3)">还没有待办事项，在上方添加一条吧</li>';
+  else list.innerHTML=all.map(t=>'<li class="todo-item"><button class="todo-check '+(t.done?'done':'')+'" data-id="'+t.id+'" data-done="'+t.done+'"></button><span class="todo-text '+(t.done?'done':'')+'">'+esc(t.text)+'</span><span class="todo-cat">'+esc(t.category)+'</span><button class="btn-icon" data-del="'+t.id+'" title="删除" style="width:26px;height:26px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></li>').join('');
+  document.getElementById('todoSummary').innerHTML='<span>待完成 <strong>'+active.length+'</strong> 项</span><span>已完成 <strong>'+done.length+'</strong> 项</span><span>总计 <strong>'+todos.length+'</strong> 项</span>';
+  list.querySelectorAll('.todo-check').forEach(btn=>{btn.addEventListener('click',async()=>{const id=+btn.dataset.id,todo=todos.find(t=>t.id===id);if(todo){todo.done=!todo.done;await put('todos',todo);renderTodos();markDirty()}})});
+  list.querySelectorAll('[data-del]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('todos',+btn.dataset.del);renderTodos();markDirty();toast('已删除')})});
+}
+document.getElementById('todoAddBtn').addEventListener('click',async()=>{const input=document.getElementById('todoInput'),text=input.value.trim();if(!text)return;await add('todos',{text,category:document.getElementById('todoCat').value,done:false,createdAt:Date.now()});input.value='';renderTodos();markDirty()});
+document.getElementById('todoInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('todoAddBtn').click()});
+
+// ═══════════════════════════════════════
+// ACCOUNTING MODULE
+// ═══════════════════════════════════════
+async function renderAccounts(){
+  const accounts=await getAll('accounts');accounts.sort((a,b)=>b.createdAt-a.createdAt);
+  let inc=0,exp=0;accounts.forEach(a=>{if(a.type==='income')inc+=a.amount;else exp+=a.amount});
+  document.getElementById('acctSummary').innerHTML='<div class="acct-stat"><div class="acct-stat-value income">¥'+inc.toFixed(2)+'</div><div class="acct-stat-label">总收入</div></div><div class="acct-stat"><div class="acct-stat-value expense">¥'+exp.toFixed(2)+'</div><div class="acct-stat-label">总支出</div></div><div class="acct-stat"><div class="acct-stat-value" style="color:'+(inc-exp>=0?'var(--accent3)':'var(--accent2)')+'">¥'+(inc-exp).toFixed(2)+'</div><div class="acct-stat-label">结余</div></div>';
+  const list=document.getElementById('acctList');
+  const colors={'餐饮':'oklch(0.6 0.16 30)','交通':'oklch(0.55 0.14 255)','购物':'oklch(0.55 0.14 300)','房租':'oklch(0.5 0.1 200)','娱乐':'oklch(0.6 0.14 50)','医疗':'oklch(0.5 0.15 20)','教育':'oklch(0.55 0.16 160)','其他':'oklch(0.5 0.01 85)'};
+  if(!accounts.length) list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">还没有记账记录</li>';
+  else list.innerHTML=accounts.map(a=>'<li class="acct-item"><div class="acct-item-left"><span class="acct-cat-dot" style="background:'+(colors[a.category]||'var(--text3)')+'"></span><span>'+esc(a.category)+(a.note?' · '+esc(a.note):'')+'</span></div><div style="display:flex;align-items:center;gap:8px"><span class="acct-amount '+a.type+'">'+(a.type==='income'?'+':'-')+'¥'+a.amount.toFixed(2)+'</span><button class="btn-icon" data-del-acct="'+a.id+'" style="width:24px;height:24px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div></li>').join('');
+  list.querySelectorAll('[data-del-acct]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('accounts',+btn.dataset.delAcct);renderAccounts();markDirty();toast('已删除')})});
+}
+document.getElementById('acctAddBtn').addEventListener('click',async()=>{const amount=parseFloat(document.getElementById('acctAmount').value);if(!amount||amount<=0){toast('请输入有效金额');return}await add('accounts',{type:document.getElementById('acctType').value,amount,category:document.getElementById('acctCat').value,note:document.getElementById('acctNote').value.trim(),createdAt:Date.now()});document.getElementById('acctAmount').value='';document.getElementById('acctNote').value='';renderAccounts();markDirty();toast('已记录')});
+
+// ═══════════════════════════════════════
+// CALENDAR MODULE
+// ═══════════════════════════════════════
+let calYear,calMonth;
+function renderCalendar(){
+  const now=new Date();
+  if(!calYear){calYear=now.getFullYear();calMonth=now.getMonth()}
+  document.getElementById('calMonth').textContent=calYear+'年 '+(calMonth+1)+'月';
+  const firstDay=new Date(calYear,calMonth,1).getDay(),daysInMonth=new Date(calYear,calMonth+1,0).getDate(),prevDays=new Date(calYear,calMonth,0).getDate();
+  let html=['日','一','二','三','四','五','六'].map(d=>'<div class="calendar-day-header">'+d+'</div>').join('');
+  for(let i=firstDay-1;i>=0;i--) html+='<div class="calendar-day other-month">'+(prevDays-i)+'</div>';
+  for(let d=1;d<=daysInMonth;d++){const isToday=d===now.getDate()&&calMonth===now.getMonth()&&calYear===now.getFullYear(),ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');html+='<div class="calendar-day'+(isToday?' today':'')+'" data-date="'+ds+'">'+d+'</div>'}
+  const rem=42-(firstDay+daysInMonth);for(let d=1;d<=rem;d++) html+='<div class="calendar-day other-month">'+d+'</div>';
+  document.getElementById('calGrid').innerHTML=html;
+  getAll('events').then(events=>{document.querySelectorAll('.calendar-day[data-date]').forEach(day=>{if(events.some(e=>e.date===day.dataset.date))day.classList.add('has-event')})});
+  renderEvents();
+}
+async function renderEvents(){
+  const events=await getAll('events');events.sort((a,b)=>a.date.localeCompare(b.date));
+  const up=events.filter(e=>e.date>=todayStr()).slice(0,10);
+  const list=document.getElementById('eventList');
+  if(!up.length) list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">暂无日程，点击上方按钮添加</li>';
+  else list.innerHTML=up.map(e=>'<li class="event-item"><span class="event-date">'+e.date+'</span><span class="event-text">'+esc(e.title)+'</span><button class="btn-icon" data-del-event="'+e.id+'" style="width:24px;height:24px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></li>').join('');
+  list.querySelectorAll('[data-del-event]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('events',+btn.dataset.delEvent);renderCalendar();markDirty();toast('已删除')})});
+}
+document.getElementById('calPrev').addEventListener('click',()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--}renderCalendar()});
+document.getElementById('calNext').addEventListener('click',()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++}renderCalendar()});
+document.getElementById('eventAddBtn').addEventListener('click',()=>{
+  showModal('添加日程','<div style="display:flex;flex-direction:column;gap:10px"><input type="text" class="input" id="eventTitle" placeholder="日程标题" maxlength="100"><input type="date" class="input" id="eventDate" value="'+todayStr()+'"></div>','<button class="btn btn-ghost" onclick="document.getElementById(\'modalOverlay\').click()">取消</button><button class="btn btn-primary" id="eventSaveBtn">保存</button>');
+  const saveBtn=document.getElementById('eventSaveBtn');
+  if(saveBtn) saveBtn.addEventListener('click',async()=>{
+    const t=document.getElementById('eventTitle')?.value?.trim(),d=document.getElementById('eventDate')?.value;
+    if(!t||!d){toast('请填写完整');return}
+    await add('events',{title:t,date:d,createdAt:Date.now()});closeModal();renderCalendar();markDirty();toast('日程已添加')
+  });
+});
+
+// ═══════════════════════════════════════
+// SLEEP MODULE
+// ═══════════════════════════════════════
+async function renderSleep(){
+  const sleeps=await getAll('sleeps');sleeps.sort((a,b)=>b.date.localeCompare(a.date));
+  const recent=sleeps.slice(0,7);let t=0;recent.forEach(s=>t+=s.duration);
+  const avg=recent.length?Math.round(t/recent.length):0,ah=Math.floor(avg/60),am=avg%60;
+  const last=sleeps[0],ls=last?last.sleepStart+' → '+last.sleepEnd+'（'+Math.floor(last.duration/60)+'h'+last.duration%60+'m）':'暂无记录';
+  document.getElementById('sleepStats').innerHTML='<div class="sleep-stat-card"><div class="sleep-stat-value">'+ah+'h '+am+'m</div><div class="sleep-stat-label">近7天平均睡眠</div></div><div class="sleep-stat-card"><div class="sleep-stat-value" style="font-size:1.2rem">'+ls+'</div><div class="sleep-stat-label">最近一次记录</div></div>';
+  document.getElementById('sleepDate').value=todayStr();
+  const list=document.getElementById('sleepHistory');
+  if(!sleeps.length) list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">还没有作息记录</li>';
+  else list.innerHTML=sleeps.slice(0,14).map(s=>'<li class="sleep-item"><span>'+s.date+'</span><span>'+s.sleepStart+' → '+s.sleepEnd+'</span><span class="sleep-duration">'+Math.floor(s.duration/60)+'h '+s.duration%60+'m</span><button class="btn-icon" data-del-sleep="'+s.id+'" style="width:24px;height:24px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></li>').join('');
+  list.querySelectorAll('[data-del-sleep]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('sleeps',+btn.dataset.delSleep);renderSleep();markDirty();toast('已删除')})});
+}
+document.getElementById('sleepAddBtn').addEventListener('click',async()=>{const start=document.getElementById('sleepStart').value,end=document.getElementById('sleepEnd').value,date=document.getElementById('sleepDate').value;if(!start||!end||!date){toast('请填写完整');return}const[sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);let d=eh*60+em-(sh*60+sm);if(d<=0)d+=1440;await add('sleeps',{sleepStart:start,sleepEnd:end,date,duration:d,createdAt:Date.now()});renderSleep();markDirty();toast('打卡成功')});
+
+// ═══════════════════════════════════════
+// AI CHAT MODULE
+// ═══════════════════════════════════════
+const chatMessages=document.getElementById('chatMessages'),chatInput=document.getElementById('chatInput');
+function addChatMsg(text,role){const div=document.createElement('div');div.className='chat-msg '+role;div.textContent=text;chatMessages.appendChild(div);chatMessages.scrollTop=chatMessages.scrollHeight}
+function aiRespond(input){const q=input.toLowerCase();if(q.includes('待办')||q.includes('todo')||q.includes('计划'))return '好的，让我帮你梳理。你可以在「待办备忘」页面查看当前所有待办事项。建议按优先级排列：\n\n1. 先处理今天截止的事项\n2. 再安排重要但不紧急的\n3. 最后处理零碎小事\n\n需要我帮你制定具体的时间安排吗？';if(q.includes('记账')||q.includes('消费')||q.includes('花钱')||q.includes('支出'))return '你可以在「极简记账」页面查看收支统计。建议每周回顾一次消费情况，重点关注：\n\n- 餐饮和购物是否超预算\n- 有没有不必要的订阅支出\n- 本月结余是否达到目标\n\n养成记账习惯后，消费会更有意识。';if(q.includes('睡眠')||q.includes('早睡')||q.includes('作息')||q.includes('失眠'))return '改善睡眠可以从这几方面入手：\n\n1. 固定入睡和起床时间，周末也尽量保持一致\n2. 睡前1小时远离手机屏幕\n3. 卧室保持凉爽、黑暗、安静\n4. 下午2点后避免咖啡因\n\n你可以在「作息打卡」页面记录每天的睡眠，观察规律。';if(q.includes('周末')||q.includes('活动')||q.includes('推荐'))return '周末可以试试这些：\n\n- 去一个没去过的公园散步\n- 做一顿复杂的菜犒劳自己\n- 整理房间，断舍离\n- 看一部收藏已久的电影\n- 约朋友喝杯咖啡聊聊天\n\n选一两件就好，不用排太满。';if(q.includes('你好')||q.includes('嗨')||q.includes('hi'))return '你好！有什么我可以帮你的？';if(q.includes('谢谢')||q.includes('感谢'))return '不客气，随时找我。';return '这是一个好问题。目前我主要能帮你：\n\n- 梳理待办事项和日程\n- 分析记账和消费情况\n- 制定作息和早睡计划\n- 推荐日常活动和安排\n\n你可以试试问我这些方面的问题。未来接入大模型后，我能回答的范围会更广。'}
+document.getElementById('chatSendBtn').addEventListener('click',()=>{const text=chatInput.value.trim();if(!text)return;addChatMsg(text,'user');chatInput.value='';setTimeout(()=>{addChatMsg(aiRespond(text),'ai')},400+Math.random()*600)});
+chatInput.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('chatSendBtn').click()});
+document.querySelectorAll('.chat-chip').forEach(chip=>{chip.addEventListener('click',()=>{chatInput.value=chip.textContent;document.getElementById('chatSendBtn').click()})});
+
+// ═══════════════════════════════════════
+// HOME-LIFE MODULE
+// ═══════════════════════════════════════
+// Shopping
+async function renderShopping(){
+  const items=await getAll('shopping');items.sort((a,b)=>a.createdAt-b.createdAt);
+  const list=document.getElementById('shoppingList');
+  if(!items.length) list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">购物清单为空</li>';
+  else list.innerHTML=items.map(i=>'<li class="todo-item"><button class="todo-check '+(i.done?'done':'')+'" data-shop-id="'+i.id+'"></button><span class="todo-text '+(i.done?'done':'')+'">'+esc(i.name)+' ×'+i.qty+'</span><span class="todo-cat">'+esc(i.category)+'</span><button class="btn-icon" data-shop-del="'+i.id+'" style="width:26px;height:26px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></li>').join('');
+  list.querySelectorAll('[data-shop-id]').forEach(btn=>{btn.addEventListener('click',async()=>{const id=+btn.dataset.shopId,item=items.find(i=>i.id===id);if(item){item.done=!item.done;await put('shopping',item);renderShopping();markDirty()}})});
+  list.querySelectorAll('[data-shop-del]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('shopping',+btn.dataset.shopDel);renderShopping();markDirty();toast('已删除')})});
+}
+document.getElementById('shoppingAddBtn').addEventListener('click',async()=>{
+  const name=document.getElementById('shoppingItem').value.trim(),qty=parseInt(document.getElementById('shoppingQty').value)||1;
+  if(!name){toast('请输入物品名称');return}
+  await add('shopping',{name,qty,category:document.getElementById('shoppingCat').value,done:false,createdAt:Date.now()});
+  document.getElementById('shoppingItem').value='';document.getElementById('shoppingQty').value='';renderShopping();markDirty();
+});
+
+// Chores
+async function renderChores(){
+  const items=await getAll('chores');items.sort((a,b)=>a.nextDate.localeCompare(b.nextDate));
+  const list=document.getElementById('choreList');
+  if(!items.length) list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">暂无家务提醒</li>';
+  else list.innerHTML=items.map(i=>'<li class="todo-item"><button class="todo-check '+(i.done?'done':'')+'" data-chore-id="'+i.id+'"></button><span class="todo-text '+(i.done?'done':'')+'">'+esc(i.task)+'</span><span class="todo-cat">'+esc(i.frequency)+' · '+i.nextDate+'</span><button class="btn-icon" data-chore-del="'+i.id+'" style="width:26px;height:26px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></li>').join('');
+  list.querySelectorAll('[data-chore-id]').forEach(btn=>{btn.addEventListener('click',async()=>{const id=+btn.dataset.choreId,item=items.find(i=>i.id===id);if(item){item.done=!item.done;await put('chores',item);renderChores();markDirty()}})});
+  list.querySelectorAll('[data-chore-del]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('chores',+btn.dataset.choreDel);renderChores();markDirty();toast('已删除')})});
+}
+document.getElementById('choreAddBtn').addEventListener('click',async()=>{
+  const task=document.getElementById('choreTask').value.trim(),freq=document.getElementById('choreFreq').value,next=document.getElementById('choreNext').value;
+  if(!task||!next){toast('请填写完整');return}
+  await add('chores',{task,frequency:freq,nextDate:next,done:false,createdAt:Date.now()});
+  document.getElementById('choreTask').value='';renderChores();markDirty();
+});
+document.getElementById('choreNext').value=todayStr();
+
+// Bills
+async function renderBills(){
+  const items=await getAll('bills');items.sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+  const list=document.getElementById('billList');
+  if(!items.length) list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">暂无缴费提醒</li>';
+  else list.innerHTML=items.map(i=>'<li class="todo-item"><button class="todo-check '+(i.paid?'done':'')+'" data-bill-id="'+i.id+'"></button><span class="todo-text '+(i.paid?'done':'')+'">'+esc(i.name)+' ¥'+i.amount.toFixed(2)+'</span><span class="todo-cat">'+esc(i.type)+' · '+i.dueDate+'</span><button class="btn-icon" data-bill-del="'+i.id+'" style="width:26px;height:26px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></li>').join('');
+  list.querySelectorAll('[data-bill-id]').forEach(btn=>{btn.addEventListener('click',async()=>{const id=+btn.dataset.billId,item=items.find(i=>i.id===id);if(item){item.paid=!item.paid;await put('bills',item);renderBills();markDirty()}})});
+  list.querySelectorAll('[data-bill-del]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('bills',+btn.dataset.billDel);renderBills();markDirty();toast('已删除')})});
+}
+document.getElementById('billAddBtn').addEventListener('click',async()=>{
+  const name=document.getElementById('billName').value.trim(),amount=parseFloat(document.getElementById('billAmount').value),due=document.getElementById('billDue').value;
+  if(!name||!amount||!due){toast('请填写完整');return}
+  await add('bills',{name,amount,type:document.getElementById('billType').value,dueDate:due,paid:false,createdAt:Date.now()});
+  document.getElementById('billName').value='';document.getElementById('billAmount').value='';renderBills();markDirty();
+});
+
+// ═══════════════════════════════════════
+// STUDY MODULE
+// ═══════════════════════════════════════
+// Timer
+let timerInterval=null,timerSeconds=1500,timerRunning=false,timerPaused=false;
+function updateTimerDisplay(){const m=Math.floor(timerSeconds/60),s=timerSeconds%60;document.getElementById('timerDisplay').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+document.getElementById('timerStartBtn').addEventListener('click',()=>{
+  if(timerRunning&&!timerPaused) return;
+  if(!timerRunning){timerSeconds=parseInt(document.getElementById('timerDuration').value)*60;updateTimerDisplay()}
+  timerRunning=true;timerPaused=false;
+  timerInterval=setInterval(()=>{
+    if(timerSeconds<=0){clearInterval(timerInterval);timerRunning=false;timerPaused=false;toast('计时结束！');updateFocusStats(parseInt(document.getElementById('timerDuration').value));return}
+    timerSeconds--;updateTimerDisplay();
+  },1000);
+});
+document.getElementById('timerPauseBtn').addEventListener('click',()=>{if(timerRunning&&!timerPaused){clearInterval(timerInterval);timerPaused=true}});
+document.getElementById('timerResetBtn').addEventListener('click',()=>{clearInterval(timerInterval);timerRunning=false;timerPaused=false;timerSeconds=parseInt(document.getElementById('timerDuration').value)*60;updateTimerDisplay()});
+document.getElementById('timerDuration').addEventListener('change',()=>{if(!timerRunning){timerSeconds=parseInt(document.getElementById('timerDuration').value)*60;updateTimerDisplay()}});
+
+function updateFocusStats(minutes){
+  const today=localStorage.getItem('dh-focus-today')||'{}',week=localStorage.getItem('dh-focus-week')||'{}';
+  const todayData=JSON.parse(today),weekData=JSON.parse(week);
+  const dk=todayStr(),wk=getWeekKey();
+  todayData[dk]=(todayData[dk]||0)+minutes;weekData[wk]=(weekData[wk]||0)+minutes;
+  localStorage.setItem('dh-focus-today',JSON.stringify(todayData));localStorage.setItem('dh-focus-week',JSON.stringify(weekData));
+  document.getElementById('todayFocus').textContent=todayData[dk]||0;
+  document.getElementById('weekFocus').textContent=weekData[wk]||0;
+}
+function getWeekKey(){const d=new Date(),start=new Date(d);start.setDate(d.getDate()-d.getDay());return start.getFullYear()+'-W'+Math.ceil((start.getDate()+6)/7)}
+function loadFocusStats(){
+  const today=JSON.parse(localStorage.getItem('dh-focus-today')||'{}'),week=JSON.parse(localStorage.getItem('dh-focus-week')||'{}');
+  document.getElementById('todayFocus').textContent=today[todayStr()]||0;
+  document.getElementById('weekFocus').textContent=week[getWeekKey()]||0;
+}
+
+// Notes
+async function renderNotes(){
+  const notes=await getAll('notes');notes.sort((a,b)=>b.createdAt-a.createdAt);
+  const list=document.getElementById('noteList');
+  if(!notes.length) list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">暂无学习笔记</li>';
+  else list.innerHTML=notes.map(n=>'<li class="todo-item" style="flex-direction:column;align-items:flex-start;gap:4px"><div style="display:flex;align-items:center;justify-content:space-between;width:100%"><span style="font-weight:600;font-size:.88rem">'+esc(n.title)+'</span><span class="todo-cat">'+esc(n.subject)+'</span></div><div style="font-size:.78rem;color:var(--text2);max-height:40px;overflow:hidden">'+esc(n.content.substring(0,80))+'</div><div style="display:flex;justify-content:space-between;width:100%;font-size:.7rem;color:var(--text3)"><span>'+new Date(n.createdAt).toLocaleString('zh-CN')+'</span><button class="btn-icon" data-note-del="'+n.id+'" style="width:22px;height:22px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div></li>').join('');
+  list.querySelectorAll('[data-note-del]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('notes',+btn.dataset.noteDel);renderNotes();markDirty();toast('已删除')})});
+}
+document.getElementById('noteSaveBtn').addEventListener('click',async()=>{
+  const title=document.getElementById('noteTitle').value.trim(),content=document.getElementById('noteContent').value.trim();
+  if(!title||!content){toast('请填写标题和内容');return}
+  await add('notes',{title,content,subject:document.getElementById('noteSubject').value,createdAt:Date.now()});
+  document.getElementById('noteTitle').value='';document.getElementById('noteContent').value='';renderNotes();markDirty();toast('笔记已保存');
+});
+document.getElementById('noteClearBtn').addEventListener('click',()=>{document.getElementById('noteTitle').value='';document.getElementById('noteContent').value=''});
+
+// Goals
+async function renderGoals(){
+  const goals=await getAll('goals');goals.sort((a,b)=>a.deadline.localeCompare(b.deadline));
+  const list=document.getElementById('goalList');
+  if(!goals.length) list.innerHTML='<li style="text-align:center;padding:24px;color:var(--text3)">暂无学习目标</li>';
+  else list.innerHTML=goals.map(g=>'<li class="todo-item"><button class="todo-check '+(g.done?'done':'')+'" data-goal-id="'+g.id+'"></button><span class="todo-text '+(g.done?'done':'')+'">'+esc(g.text)+'</span><span class="todo-cat">'+esc(g.priority)+' · '+g.deadline+'</span><button class="btn-icon" data-goal-del="'+g.id+'" style="width:26px;height:26px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></li>').join('');
+  list.querySelectorAll('[data-goal-id]').forEach(btn=>{btn.addEventListener('click',async()=>{const id=+btn.dataset.goalId,goal=goals.find(g=>g.id===id);if(goal){goal.done=!goal.done;await put('goals',goal);renderGoals();markDirty()}})});
+  list.querySelectorAll('[data-goal-del]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('goals',+btn.dataset.goalDel);renderGoals();markDirty();toast('已删除')})});
+}
+document.getElementById('goalAddBtn').addEventListener('click',async()=>{
+  const text=document.getElementById('goalText').value.trim(),deadline=document.getElementById('goalDeadline').value;
+  if(!text||!deadline){toast('请填写完整');return}
+  await add('goals',{text,deadline,priority:document.getElementById('goalPriority').value,done:false,createdAt:Date.now()});
+  document.getElementById('goalText').value='';renderGoals();markDirty();
+});
+
+// ═══════════════════════════════════════
+// RELAX MODULE
+// ═══════════════════════════════════════
+// Mood
+let selectedMood=3;
+document.querySelectorAll('.mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{selectedMood=+btn.dataset.mood;document.querySelectorAll('.mood-btn').forEach(b=>b.style.transform='scale(1)');btn.style.transform='scale(1.3)'})});
+document.getElementById('moodDate').value=todayStr();
+
+async function renderMoods(){
+  const moods=await getAll('moods');moods.sort((a,b)=>a.date.localeCompare(b.date));
+  const chart=document.getElementById('moodChart');
+  if(!moods.length){chart.innerHTML='<span style="color:var(--text3);font-size:.8rem">暂无心情记录</span>';return}
+  const recent=moods.slice(-14),max=5;
+  chart.innerHTML=recent.map(m=>'<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:24px"><div style="width:100%;height:'+(m.mood/max*100)+'px;background:oklch(0.55 0.14 '+(m.mood*60)+');border-radius:4px 4px 0 0;transition:height 300ms ease-out"></div><span style="font-size:.55rem;color:var(--text3)">'+m.date.slice(5)+'</span></div>').join('');
+}
+document.getElementById('moodSaveBtn').addEventListener('click',async()=>{
+  const note=document.getElementById('moodNote').value.trim(),date=document.getElementById('moodDate').value;
+  if(!date){toast('请选择日期');return}
+  await add('moods',{mood:selectedMood,note,date,createdAt:Date.now()});
+  document.getElementById('moodNote').value='';renderMoods();markDirty();toast('心情已记录');
+});
+document.getElementById('moodClearBtn').addEventListener('click',()=>{document.getElementById('moodNote').value=''});
+
+// Music
+let musicPlaying=false,musicTimer=null,musicSeconds=0;
+const musicTracks={nature:'自然白噪音',rain:'雨声',piano:'钢琴曲',ocean:'海浪'};
+document.getElementById('musicToggleBtn').addEventListener('click',()=>{
+  musicPlaying=!musicPlaying;
+  document.getElementById('musicToggleBtn').textContent=musicPlaying?'⏸ 暂停':'▶ 播放';
+  if(musicPlaying){musicTimer=setInterval(()=>{musicSeconds++;if(musicSeconds>=300){musicSeconds=0;musicPlaying=false;clearInterval(musicTimer);document.getElementById('musicToggleBtn').textContent='▶ 播放'}updateMusicUI()},1000)}
+  else{clearInterval(musicTimer)}
+});
+function updateMusicUI(){
+  const m=Math.floor(musicSeconds/60),s=musicSeconds%60;
+  document.getElementById('musicTime').textContent=m+':'+String(s).padStart(2,'0')+' / 5:00';
+  document.getElementById('musicProgress').style.width=(musicSeconds/300*100)+'%';
+}
+document.getElementById('musicSelect').addEventListener('change',()=>{
+  const v=document.getElementById('musicSelect').value;
+  document.getElementById('musicTitle').textContent=musicTracks[v];
+  musicSeconds=0;updateMusicUI();
+});
+document.getElementById('musicPrevBtn').addEventListener('click',()=>{musicSeconds=Math.max(0,musicSeconds-30);updateMusicUI()});
+document.getElementById('musicNextBtn').addEventListener('click',()=>{musicSeconds=Math.min(300,musicSeconds+30);updateMusicUI()});
+
+// Game
+let gameActive=false,gameScore=0,gameTime=60,gameInterval=null,gameTarget=null;
+document.getElementById('gameStartBtn').addEventListener('click',()=>{
+  if(gameActive) return;
+  gameActive=true;gameScore=0;gameTime=60;
+  document.getElementById('gameScore').textContent='0';document.getElementById('gameTime').textContent='60';
+  document.getElementById('gameStartBtn').textContent='游戏中…';
+  const canvas=document.getElementById('gameCanvas');
+  canvas.innerHTML='';
+  gameTarget=document.createElement('div');
+  gameTarget.style.cssText='width:50px;height:50px;background:var(--accent);border-radius:50%;cursor:pointer;position:relative;transition:all 100ms ease-out';
+  gameTarget.addEventListener('click',()=>{gameScore++;document.getElementById('gameScore').textContent=gameScore;moveTarget()});
+  canvas.appendChild(gameTarget);
+  moveTarget();
+  gameInterval=setInterval(()=>{gameTime--;document.getElementById('gameTime').textContent=gameTime;if(gameTime<=0){endGame()}},1000);
+});
+function moveTarget(){
+  if(!gameTarget) return;
+  const canvas=document.getElementById('gameCanvas'),w=canvas.clientWidth-50,h=canvas.clientHeight-50;
+  gameTarget.style.left=Math.random()*w+'px';gameTarget.style.top=Math.random()*h+'px';
+}
+function endGame(){
+  gameActive=false;clearInterval(gameInterval);
+  document.getElementById('gameStartBtn').textContent='开始游戏';
+  document.getElementById('gameCanvas').innerHTML='<span style="color:var(--text2)">游戏结束！得分: '+gameScore+'</span>';
+  toast('游戏结束！得分: '+gameScore);
+}
+
+// ═══════════════════════════════════════
+// GALLERY MODULE
+// ═══════════════════════════════════════
+let pendingFiles=[];
+const uploadArea=document.getElementById('uploadArea'),fileInput=document.getElementById('fileInput');
+
+// 测试按钮是否存在
+console.log('uploadBtn元素:', document.getElementById('uploadBtn'));
+console.log('uploadArea元素:', uploadArea);
+console.log('fileInput元素:', fileInput);
+
+function handleFiles(files){
+  console.log('handleFiles被调用，文件数量:', files.length);
+  pendingFiles=Array.from(files).filter(f=>f.type.startsWith('image/'));
+  console.log('过滤后的图片数量:', pendingFiles.length);
+  if(!pendingFiles.length){toast('请选择图片文件');return}
+  const uploadBtn=document.getElementById('uploadBtn');
+  uploadBtn.disabled=false;
+  uploadBtn.textContent='上传 ('+pendingFiles.length+'张)';
+  toast('已选择 '+pendingFiles.length+' 张图片');
+}
+
+uploadArea.addEventListener('click',()=>fileInput.click());
+uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.style.borderColor='var(--accent)'});
+uploadArea.addEventListener('dragleave',()=>{uploadArea.style.borderColor='var(--border)'});
+uploadArea.addEventListener('drop',e=>{e.preventDefault();uploadArea.style.borderColor='var(--border)';handleFiles(e.dataTransfer.files)});
+fileInput.addEventListener('change',()=>handleFiles(fileInput.files));
+
+document.getElementById('uploadBtn').addEventListener('click',async()=>{
+  console.log('上传按钮被点击，pendingFiles:', pendingFiles.length);
+  toast('上传按钮被点击，开始处理...');
+  
+  if(!pendingFiles.length){toast('没有选择图片');return}
+  
+  // 检查数据库是否就绪
+  if(!db){
+    toast('数据库未初始化，请刷新页面');
+    return;
+  }
+  
+  const title=document.getElementById('imageTitle').value.trim(),category=document.getElementById('imageCategory').value;
+  const total=pendingFiles.length;
+  try{
+    for(let i=0;i<pendingFiles.length;i++){
+      const file=pendingFiles[i];
+      const reader=new FileReader();
+      document.getElementById('uploadBtn').textContent='上传中 ('+(i+1)+'/'+total+')';
+      await new Promise(resolve=>{
+        reader.onload=async()=>{
+          try{
+            await add('images',{title:title||file.name,data:reader.result,category,createdAt:Date.now()});
+            console.log('图片已保存:', file.name);
+            toast('已保存: '+file.name);
+          }catch(err){
+            console.error('保存图片失败:', err);
+            toast('保存失败: '+file.name);
+          }
+          resolve();
+        };
+        reader.onerror=()=>{console.error('读取文件失败:', file.name);resolve()};
+        reader.readAsDataURL(file);
+      });
+    }
+    pendingFiles=[];document.getElementById('uploadBtn').disabled=true;document.getElementById('uploadBtn').textContent='上传';
+    document.getElementById('imageTitle').value='';fileInput.value='';
+    await renderGallery();markDirty();toast('上传完成');
+  }catch(err){
+    console.error('上传过程出错:', err);
+    toast('上传失败: '+err.message);
+    document.getElementById('uploadBtn').textContent='上传 ('+total+'张)';
+  }
+});
+
+async function renderGallery(){
+  const images=await getAll('images');images.sort((a,b)=>b.createdAt-a.createdAt);
+  const filter=document.getElementById('filterCategory').value,search=document.getElementById('searchImages').value.toLowerCase();
+  let filtered=images;
+  if(filter) filtered=filtered.filter(i=>i.category===filter);
+  if(search) filtered=filtered.filter(i=>(i.title||'').toLowerCase().includes(search));
+  const grid=document.getElementById('galleryGrid'),empty=document.getElementById('galleryEmpty');
+  if(!filtered.length){grid.innerHTML='';empty.style.display='block';return}
+  empty.style.display='none';
+  grid.innerHTML=filtered.map(i=>'<div style="position:relative;border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:1;background:var(--surface2);cursor:pointer" data-img-id="'+i.id+'"><img src="'+i.data+'" alt="'+esc(i.title||'')+'" style="width:100%;height:100%;object-fit:cover" loading="lazy"><div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,oklch(0 0 0/.6));padding:8px;display:flex;justify-content:space-between;align-items:center"><span style="color:#fff;font-size:.75rem">'+esc(i.title||'无标题')+'</span><span style="color:oklch(1 1 0/.7);font-size:.65rem">'+esc(i.category)+'</span></div><button class="btn-icon" data-img-del="'+i.id+'" style="position:absolute;top:4px;right:4px;width:24px;height:24px;background:oklch(0 0 0/.5);border-radius:50%;color:#fff" onclick="event.stopPropagation()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>').join('');
+  grid.querySelectorAll('[data-img-id]').forEach(el=>{el.addEventListener('click',()=>{const img=filtered.find(i=>i.id===+el.dataset.imgId);if(img) showModal(img.title||'图片预览','<img src="'+img.data+'" style="width:100%;max-height:70vh;object-fit:contain;border-radius:var(--radius-sm)"><div style="font-size:.8rem;color:var(--text2);margin-top:8px">分类: '+esc(img.category)+' · '+new Date(img.createdAt).toLocaleString('zh-CN')+'</div>','<button class="btn btn-ghost" onclick="document.getElementById(\'modalOverlay\').click()">关闭</button>')})});
+  grid.querySelectorAll('[data-img-del]').forEach(btn=>{btn.addEventListener('click',async()=>{await remove('images',+btn.dataset.imgDel);renderGallery();markDirty();toast('已删除')})});
+}
+document.getElementById('filterCategory').addEventListener('change',renderGallery);
+document.getElementById('searchImages').addEventListener('input',renderGallery);
+
+// ═══════════════════════════════════════
+// SYNC CONTROLS
+// ═══════════════════════════════════════
+let dirty = false;
+let syncTimer = null;
+
+function markDirty(){ dirty = true; }
+
+async function autoSync(){
+  if(!dirty) return;
+  dirty = false;
+  await syncPush();
+}
+
+document.getElementById('syncPushBtn').addEventListener('click',async()=>{dirty=false;await syncPush()});
+document.getElementById('syncPullBtn').addEventListener('click',async()=>{await syncPull();renderTodos();renderAccounts();renderSleep();renderCalendar();renderShopping();renderChores();renderBills();renderNotes();renderGoals();renderMoods();renderGallery()});
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+async function init(){
+  try{
+    db = await openDB();
+    // Pull first, then render
+    setSyncStatus('syncing','拉取云端数据…');
+    const pulled = await syncPull();
+    if(!pulled) setSyncStatus('idle','待同步');
+    await Promise.all([renderTodos(),renderAccounts(),renderSleep(),renderShopping(),renderChores(),renderBills(),renderNotes(),renderGoals(),renderMoods(),renderGallery()]);
+    loadFocusStats();
+    // Start auto-sync
+    syncTimer = setInterval(autoSync, SYNC_INTERVAL);
+  }catch(err){
+    console.error('Init failed:', err);
+    setSyncStatus('error','初始化失败');
+  }
+  
+  // 测试事件监听器
+  console.log('页面加载完成，测试事件监听器...');
+  console.log('uploadBtn点击监听器:', document.getElementById('uploadBtn').onclick);
+  console.log('uploadArea点击监听器:', uploadArea.onclick);
+  toast('页面加载完成，可以尝试上传图片');
+}
+
+init();
+})();
+</script>
+</body>
+</html>
