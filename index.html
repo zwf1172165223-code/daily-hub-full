@@ -51,6 +51,8 @@
   --mod-study: oklch(0.48 0.12 260);
   --mod-relax: oklch(0.58 0.12 350);
   --mod-gallery: oklch(0.58 0.14 30);
+  --mod-life: oklch(0.52 0.14 80);
+  --mod-address: oklch(0.5 0.12 120);
 
   /* Status Colors */
   --success: oklch(0.52 0.15 155);
@@ -654,6 +656,161 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-hei
 @keyframes toastOut{from{opacity:1}to{opacity:0}}
 
 /* ═══════════════════════════════════════
+   HOME PAGE - DASHBOARD
+   ═══════════════════════════════════════ */
+.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:18px;margin-bottom:24px}
+.dashboard-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:20px;
+  box-shadow:var(--shadow);transition:all var(--transition);
+}
+.dashboard-card:hover{box-shadow:var(--shadow-md);border-color:var(--border-light)}
+.dashboard-card-title{
+  font-size:.84rem;font-weight:600;color:var(--text2);
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.dashboard-card-value{
+  font-family:var(--font-serif);font-size:clamp(1.5rem, 2vw, 1.8rem);
+  font-weight:700;letter-spacing:-.01em;margin-bottom:8px;
+}
+.dashboard-progress{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:10px}
+.dashboard-progress-fill{height:100%;border-radius:4px;transition:width 500ms var(--ease)}
+.dashboard-bar-chart{display:flex;align-items:flex-end;gap:6px;height:100px;margin-top:8px}
+.dashboard-bar{flex:1;border-radius:4px 4px 0 0;transition:height 400ms var(--ease);min-width:20px;position:relative}
+.dashboard-bar-label{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:.6rem;color:var(--text3);white-space:nowrap}
+.dashboard-bar-value{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:.65rem;font-weight:600;color:var(--text2)}
+.dashboard-schedule-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.dashboard-schedule-item{display:flex;align-items:center;gap:8px;font-size:.82rem;padding:6px 0;border-bottom:1px solid var(--border-light)}
+.dashboard-schedule-item:last-child{border-bottom:none}
+.dashboard-schedule-time{font-size:.7rem;color:var(--accent);font-weight:600;min-width:48px}
+.dashboard-schedule-text{flex:1;color:var(--text)}
+.dashboard-empty{text-align:center;padding:24px;color:var(--text3);font-size:.8rem}
+
+/* Quick-actions row on home page */
+.quick-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
+.quick-action{
+  display:flex;align-items:center;gap:7px;padding:10px 16px;
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);cursor:pointer;font-size:.82rem;
+  color:var(--text2);transition:all var(--transition);
+  font-family:var(--font-sans);font-weight:500;
+}
+.quick-action:hover{background:var(--accent-light);color:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
+.quick-action:active{transform:translateY(0) scale(.96)}
+
+/* ═══════════════════════════════════════
+   TODO ENHANCEMENTS - PRIORITY / SUBTASKS
+   ═══════════════════════════════════════ */
+.priority-tag{
+  font-size:.64rem;font-weight:700;padding:2px 8px;
+  border-radius:var(--radius-full);white-space:nowrap;letter-spacing:.02em;
+}
+.priority-urgent{background:oklch(0.52 0.16 25 / 0.12);color:oklch(0.52 0.16 25)}
+.priority-important{background:oklch(0.62 0.13 55 / 0.15);color:oklch(0.55 0.12 50)}
+.priority-normal{background:oklch(0.52 0.04 250 / 0.1);color:oklch(0.42 0.04 250)}
+.deadline-tag{font-size:.64rem;color:var(--warning);font-weight:600}
+.deadline-overdue{color:var(--error)}
+.subtask-list{margin:4px 0 0 24px;list-style:none;display:flex;flex-direction:column;gap:2px;width:100%}
+.subtask-item{display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--text2)}
+.subtask-check{width:14px;height:14px;border:1.5px solid var(--text3);border-radius:3px;cursor:pointer;flex-shrink:0;background:none;padding:0;transition:all var(--transition-fast)}
+.subtask-check:hover{border-color:var(--success)}
+.subtask-check.done{background:var(--success);border-color:var(--success)}
+.subtask-check.done::after{content:'';display:block;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin:0 auto}
+.subtask-text.done{text-decoration:line-through;color:var(--text3)}
+.subtask-add-row{display:flex;gap:4px;margin-top:4px}
+.subtask-add-row .input{font-size:.74rem;padding:3px 8px}
+
+/* ═══════════════════════════════════════
+   ACCOUNTING ENHANCEMENTS
+   ═══════════════════════════════════════ */
+.custom-cat-input-row{display:flex;gap:6px;align-items:center}
+.custom-cat-tag{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 9px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-full);font-size:.72rem;cursor:pointer;
+  transition:all var(--transition-fast);
+}
+.custom-cat-tag:hover{background:var(--accent-light);border-color:var(--accent)}
+.custom-cat-tag .remove-cat{font-size:.65rem;opacity:.5;cursor:pointer}
+.custom-cat-tag .remove-cat:hover{opacity:1;color:var(--error)}
+
+/* ═══════════════════════════════════════
+   ADDRESS BOOK
+   ═══════════════════════════════════════ */
+.address-card{
+  background:var(--surface2);border:1.5px solid transparent;
+  border-radius:var(--radius-sm);padding:14px 16px;
+  transition:all var(--transition);
+}
+.address-card:hover{background:var(--surface3);border-color:var(--border-light)}
+.address-name{font-weight:600;font-size:.88rem;margin-bottom:4px}
+.address-detail{font-size:.78rem;color:var(--text2);display:flex;flex-wrap:wrap;gap:8px}
+
+/* ═══════════════════════════════════════
+   MARKDOWN NOTES
+   ═══════════════════════════════════════ */
+.md-note-item{
+  cursor:pointer;transition:all var(--transition);padding:12px 14px;
+  background:var(--surface2);border-radius:var(--radius-sm);
+  border:1.5px solid transparent;margin-bottom:6px;
+}
+.md-note-item:hover{background:var(--surface3);border-color:var(--border-light)}
+.md-note-preview{font-size:.78rem;color:var(--text2);line-height:1.5;margin-top:6px;max-height:56px;overflow:hidden}
+.md-toolbar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.md-toolbar button{
+  padding:4px 8px;font-size:.74rem;border:1.5px solid var(--border);
+  background:var(--surface);border-radius:4px;cursor:pointer;
+  font-family:var(--font-sans);color:var(--text2);transition:all var(--transition-fast);
+}
+.md-toolbar button:hover{background:var(--accent-light);color:var(--accent);border-color:var(--accent)}
+.md-editor{min-height:200px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.84rem;line-height:1.7}
+
+/* ═══════════════════════════════════════
+   MEDIA COLLECTION
+   ═══════════════════════════════════════ */
+.media-card{
+  display:flex;gap:12px;align-items:center;padding:12px 14px;
+  background:var(--surface2);border-radius:var(--radius-sm);
+  border:1.5px solid transparent;transition:all var(--transition);
+}
+.media-card:hover{background:var(--surface3);border-color:var(--border-light)}
+.media-type-icon{width:36px;height:36px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.media-type-movie{background:oklch(0.55 0.14 350 / 0.12)}.media-type-music{background:oklch(0.55 0.14 155 / 0.12)}.media-type-book{background:oklch(0.55 0.14 250 / 0.12)}
+.media-info{flex:1;min-width:0}
+.media-title{font-weight:600;font-size:.85rem}
+.media-meta{font-size:.72rem;color:var(--text2);margin-top:2px}
+.media-rating{font-size:.8rem;color:var(--warning)}
+
+/* ═══════════════════════════════════════
+   HEALING QUOTES
+   ═══════════════════════════════════════ */
+.healing-quote{
+  text-align:center;padding:24px 16px;font-family:var(--font-serif);
+}
+.healing-quote-text{font-size:1.05rem;line-height:1.7;color:var(--text);margin-bottom:8px;font-style:italic}
+.healing-quote-author{font-size:.78rem;color:var(--text2)}
+.healing-quote-refresh{display:flex;justify-content:center;margin-top:12px}
+
+/* ═══════════════════════════════════════
+   MATERIAL LIBRARY
+   ═══════════════════════════════════════ */
+.material-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:12px}
+.material-card{
+  position:relative;border-radius:var(--radius-sm);overflow:hidden;
+  aspect-ratio:1;background:var(--surface2);cursor:pointer;
+  border:1.5px solid var(--border);transition:all var(--transition);
+}
+.material-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.material-card img{width:100%;height:100%;object-fit:cover}
+.material-card-overlay{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent, oklch(0 0 0 / 0.7));
+  padding:10px;display:flex;justify-content:space-between;align-items:flex-end;
+}
+.material-card-label{color:#fff;font-size:.76rem;font-weight:500}
+.material-card-tag{color:oklch(1 1 0 / 0.7);font-size:.65rem}
+
+/* ═══════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════ */
 @media(max-width:700px){
@@ -718,7 +875,8 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-hei
     Daily Hub
   </div>
   <nav class="navbar-nav" id="navbarNav">
-    <button class="navbar-nav-item active" data-page="todo"><svg class="navbar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>待办备忘</span></button>
+    <button class="navbar-nav-item active" data-page="home"><svg class="navbar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>首页</span></button>
+    <button class="navbar-nav-item" data-page="todo"><svg class="navbar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>待办备忘</span></button>
     <button class="navbar-nav-item" data-page="accounting"><svg class="navbar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>极简记账</span></button>
     <button class="navbar-nav-item" data-page="calendar"><svg class="navbar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>日程日历</span></button>
     <button class="navbar-nav-item" data-page="sleep"><svg class="navbar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><span>作息打卡</span></button>
@@ -736,7 +894,7 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-hei
     <button class="theme-btn" id="navbarThemeToggle" title="切换主题">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/></svg>
     </button>
-    <span class="version-tag">v1.1</span>
+    <span class="version-tag">v2.0</span>
   </div>
 </header>
 
@@ -745,8 +903,10 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-hei
 <aside class="sidebar">
   <div class="sidebar-brand">Daily Hub</div>
   <nav class="sidebar-nav">
+    <div class="nav-section-label">首页</div>
+    <button class="nav-item active" data-page="home"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>首页看板</span></button>
     <div class="nav-section-label">核心工具</div>
-    <button class="nav-item active" data-page="todo"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>待办备忘</span></button>
+    <button class="nav-item" data-page="todo"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>待办备忘</span></button>
     <button class="nav-item" data-page="accounting"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>极简记账</span></button>
     <button class="nav-item" data-page="calendar"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>日程日历</span></button>
     <button class="nav-item" data-page="sleep"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><span>作息打卡</span></button>
@@ -777,13 +937,55 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-hei
     </span>
   </div>
 
+  <!-- ====== HOME PAGE (Dashboard) ====== -->
+  <section class="page active" id="page-home">
+    <div class="page-header"><h1 class="page-title">每日看板</h1><p class="page-subtitle" id="homeDate"></p></div>
+    <div class="quick-actions" id="quickActions"></div>
+    <div class="dashboard-grid">
+      <!-- 待办完成率 -->
+      <div class="dashboard-card" id="dashTodo">
+        <div class="dashboard-card-title">📋 待办完成率</div>
+        <div class="dashboard-card-value" id="dashTodoValue">0%</div>
+        <div class="dashboard-progress"><div class="dashboard-progress-fill" id="dashTodoBar" style="width:0%;background:var(--mod-todo)"></div></div>
+        <div style="font-size:.72rem;color:var(--text2);margin-top:8px" id="dashTodoDetail"></div>
+      </div>
+      <!-- 本月收支柱状图 -->
+      <div class="dashboard-card" id="dashAcct">
+        <div class="dashboard-card-title">💰 本月收支</div>
+        <div class="dashboard-card-value" id="dashAcctValue">¥0</div>
+        <div class="dashboard-bar-chart" id="dashAcctChart"></div>
+      </div>
+      <!-- 今日日程 -->
+      <div class="dashboard-card" id="dashSchedule">
+        <div class="dashboard-card-title">📅 今日日程</div>
+        <ul class="dashboard-schedule-list" id="dashScheduleList"></ul>
+      </div>
+      <!-- 作息打卡进度 -->
+      <div class="dashboard-card" id="dashSleep">
+        <div class="dashboard-card-title">🌙 作息打卡</div>
+        <div class="dashboard-card-value" id="dashSleepValue">--</div>
+        <div class="dashboard-progress"><div class="dashboard-progress-fill" id="dashSleepBar" style="width:0%;background:var(--mod-sleep)"></div></div>
+        <div style="font-size:.72rem;color:var(--text2);margin-top:8px" id="dashSleepDetail"></div>
+      </div>
+    </div>
+    <!-- 每日治愈短句 -->
+    <div class="card" id="dashQuote">
+      <div class="healing-quote">
+        <div class="healing-quote-text" id="dashQuoteText"></div>
+        <div class="healing-quote-author" id="dashQuoteAuthor"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ====== TODO PAGE ====== -->
-  <section class="page active" id="page-todo">
-    <div class="page-header"><h1 class="page-title">待办 & 备忘</h1><p class="page-subtitle">随手记录，智能分类，让每一天井井有条</p></div>
+  <section class="page" id="page-todo">
+    <div class="page-header"><h1 class="page-title">待办 & 备忘</h1><p class="page-subtitle">优先级标签、子任务拆分、截止提醒，让每一天井井有条</p></div>
     <div class="card">
       <div class="todo-input-row">
-        <input type="text" class="input" id="todoInput" placeholder="添加待办事项…" maxlength="200">
-        <select class="select" id="todoCat" style="width:100px"><option value="工作">工作</option><option value="生活">生活</option><option value="学习">学习</option><option value="健康">健康</option><option value="其他">其他</option></select>
+        <input type="text" class="input" id="todoInput" placeholder="添加待办事项…" maxlength="200" style="flex:2">
+        <select class="select" id="todoPriority" style="width:90px"><option value="normal">普通</option><option value="important">重要</option><option value="urgent">紧急</option></select>
+        <select class="select" id="todoCat" style="width:110px"><option value="电商">电商</option><option value="生活">生活</option><option value="学习">学习</option><option value="工作">工作</option><option value="健康">健康</option><option value="其他">其他</option></select>
+        <input type="date" class="input" id="todoDeadline" style="width:135px;font-size:.8rem" title="截止日期">
         <button class="btn btn-primary" id="todoAddBtn">添加</button>
       </div>
       <ul class="todo-list" id="todoList"></ul>
@@ -799,9 +1001,15 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-hei
       <div class="acct-form">
         <select class="select" id="acctType" style="width:80px"><option value="expense">支出</option><option value="income">收入</option></select>
         <input type="number" class="input" id="acctAmount" placeholder="金额" min="0.01" step="0.01" style="width:120px">
-        <select class="select" id="acctCat" style="width:100px"><option value="餐饮">餐饮</option><option value="交通">交通</option><option value="购物">购物</option><option value="房租">房租</option><option value="娱乐">娱乐</option><option value="医疗">医疗</option><option value="教育">教育</option><option value="其他">其他</option></select>
+        <select class="select" id="acctCat" style="width:110px"><option value="餐饮">餐饮</option><option value="交通">交通</option><option value="购物">购物</option><option value="房租">房租</option><option value="娱乐">娱乐</option><option value="医疗">医疗</option><option value="教育">教育</option><option value="其他">其他</option></select>
         <input type="text" class="input" id="acctNote" placeholder="备注（可选）" maxlength="50" style="width:140px">
         <button class="btn btn-primary" id="acctAddBtn">记一笔</button>
+      </div>
+      <div class="custom-cat-input-row" style="margin-bottom:14px;gap:8px;display:flex;align-items:center;flex-wrap:wrap">
+        <input type="text" class="input" id="customCatInput" placeholder="自定义分类名称" maxlength="20" style="width:140px;font-size:.78rem;padding:5px 9px">
+        <select class="select" id="customCatType" style="width:80px;font-size:.78rem;padding:5px 9px"><option value="expense">支出</option><option value="income">收入</option></select>
+        <button class="btn btn-ghost btn-xs" id="customCatAddBtn">+ 添加分类</button>
+        <div id="customCatTags" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px"></div>
       </div>
       <ul class="acct-list" id="acctList"></ul>
     </div>
@@ -1026,9 +1234,9 @@ const SYNC_INTERVAL = 30000; // auto-sync every 30s
 // ═══════════════════════════════════════
 // IndexedDB
 // ═══════════════════════════════════════
-const DB_NAME = 'DailyHubDB', DB_VERSION = 2;
+const DB_NAME = 'DailyHubDB', DB_VERSION = 3;
 let db = null;
-const STORES = ['todos','accounts','events','sleeps','shopping','chores','bills','notes','goals','moods','images'];
+const STORES = ['todos','accounts','events','sleeps','shopping','chores','bills','notes','goals','moods','images','addresses','mdnotes','materials','medias','customCats','diary'];
 
 function openDB(){
   return new Promise((resolve,reject)=>{
@@ -1036,14 +1244,21 @@ function openDB(){
     req.onupgradeneeded = (e)=>{
       const d = e.target.result;
       const oldVersion = e.oldVersion;
-      
+
       // 从版本1升级到版本2：添加新表
       if(oldVersion < 2){
         ['shopping','chores','bills','notes','goals','moods','images'].forEach(s=>{
           if(!d.objectStoreNames.contains(s)) d.createObjectStore(s,{keyPath:'id',autoIncrement:true});
         });
       }
-      
+
+      // 版本3：添加新功能表
+      if(oldVersion < 3){
+        ['addresses','mdnotes','materials','medias','customCats','diary'].forEach(s=>{
+          if(!d.objectStoreNames.contains(s)) d.createObjectStore(s,{keyPath:'id',autoIncrement:true});
+        });
+      }
+
       // 确保所有表都存在
       STORES.forEach(s=>{
         if(!d.objectStoreNames.contains(s)) d.createObjectStore(s,{keyPath:'id',autoIncrement:true});
